@@ -1,5 +1,21 @@
-import { ComingSoon } from "@/components/ui/coming-soon";
+import { PageHeader } from "@/components/ui/page-header";
+import { ConversationList } from "@/components/conversations/conversation-list";
+import { listConversations } from "@/lib/conversations/queries";
 
-export default function Page() {
-  return <ComingSoon title="Unassigned Queue" />;
+export default async function EmployeeQueuePage() {
+  // RLS (conversations_select) already scopes "unassigned" to WhatsApp
+  // accounts this employee is authorized to work on.
+  const conversations = await listConversations({ unassignedOnly: true });
+
+  return (
+    <>
+      <PageHeader
+        title="Unassigned Queue"
+        description="Conversations on your WhatsApp accounts waiting to be claimed."
+      />
+      <div className="p-8">
+        <ConversationList conversations={conversations} basePath="/employee/queue" />
+      </div>
+    </>
+  );
 }
