@@ -47,7 +47,7 @@ export function ConnectAccountForm({ clients }: { clients: { id: string; company
           className="mt-1 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 dark:border-zinc-700 dark:bg-zinc-950"
         />
         <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-          Encrypted before it's stored, and never sent back to any browser. Without it, the account is registered but
+          Encrypted before it&apos;s stored, and never sent back to any browser. Without it, the account is registered but
           stays in test mode (replies save locally, nothing sends to WhatsApp) until a token is added.
         </p>
       </div>
