@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import type { ConversationListRow } from "@/lib/conversations/types";
+import { getResponseThresholdsMap, thresholdsFor, computeResponseIndicator } from "@/lib/response-time";
 
 function timeAgo(iso: string | null) {
   if (!iso) return "—";
@@ -13,7 +14,13 @@ function timeAgo(iso: string | null) {
   return `${Math.floor(hours / 24)}d ago`;
 }
 
-export function ConversationList({
+const INDICATOR_STYLE = {
+  ok: { color: "var(--viz-good, #0ca30c)", label: "On track" },
+  warning: { color: "var(--viz-warning, #fab219)", label: "Approaching target" },
+  overdue: { color: "var(--viz-critical, #d03b3b)", label: "Overdue" },
+};
+
+export async function ConversationList({
   conversations,
   basePath,
   showClient = false,
@@ -22,6 +29,8 @@ export function ConversationList({
   basePath: string;
   showClient?: boolean;
 }) {
+  const thresholdsMap = await getResponseThresholdsMap();
+
   if (conversations.length === 0) {
     return (
       <div className="rounded-lg border border-dashed border-zinc-300 bg-white p-10 text-center text-sm text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400">
@@ -41,11 +50,17 @@ export function ConversationList({
             <th className="px-4 py-3">Status</th>
             <th className="px-4 py-3">Priority</th>
             <th className="px-4 py-3">Tags</th>
+            <th className="px-4 py-3">Response</th>
             <th className="px-4 py-3">Last message</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
-          {conversations.map((c) => (
+          {conversations.map((c) => {
+            const showIndicator = c.awaiting_response && c.status !== "resolved" && c.last_message_at;
+            const indicator = showIndicator
+              ? INDICATOR_STYLE[computeResponseIndicator(c.last_message_at!, thresholdsFor(thresholdsMap, c.client?.id ?? null))]
+              : null;
+            return (
             <tr key={c.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
               <td className="px-4 py-3">
                 <Link href={`${basePath}/${c.id}`} className="block">
@@ -85,9 +100,24 @@ export function ConversationList({
                   ))}
                 </div>
               </td>
+              <td className="px-4 py-3">
+                {indicator ? (
+                  <span className="inline-flex items-center gap-1.5" title={indicator.label}>
+                    <span
+                      className="h-2.5 w-2.5 rounded-full"
+                      style={{ backgroundColor: indicator.color }}
+                      aria-hidden
+                    />
+                    <span className="text-xs text-zinc-500 dark:text-zinc-400">{indicator.label}</span>
+                  </span>
+                ) : (
+                  <span className="text-xs text-zinc-300 dark:text-zinc-700">—</span>
+                )}
+              </td>
               <td className="px-4 py-3 text-zinc-500 dark:text-zinc-400">{timeAgo(c.last_message_at)}</td>
             </tr>
-          ))}
+            );
+          })}
         </tbody>
       </table>
     </div>

@@ -5,6 +5,7 @@ export type ConversationListRow = {
   status: Enums<"conversation_status">;
   priority: Enums<"conversation_priority">;
   unread_count: number;
+  awaiting_response: boolean;
   last_message_at: string | null;
   created_at: string;
   client: { id: string; company_name: string } | null;

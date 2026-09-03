@@ -90,6 +90,7 @@ export async function sendMessageAction(conversationId: string, formData: FormDa
     .update({
       last_message_at: new Date().toISOString(),
       unread_count: 0,
+      awaiting_response: false,
       first_response_at: conv?.first_response_at ?? new Date().toISOString(),
       status: conv?.status === "new" ? "open" : conv?.status,
     })

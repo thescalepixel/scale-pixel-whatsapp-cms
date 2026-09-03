@@ -31,7 +31,7 @@ export async function login(_prevState: LoginState, formData: FormData): Promise
   if (data.user) {
     await supabase
       .from("users")
-      .update({ last_login_at: new Date().toISOString() })
+      .update({ last_login_at: new Date().toISOString(), is_online: true })
       .eq("id", data.user.id);
     await writeAudit({ action: "auth.login", resourceType: "user", resourceId: data.user.id });
   }

@@ -7,17 +7,17 @@ import { requireUser } from "@/lib/auth/session";
 export default async function EmployeeConversationsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; priority?: string }>;
+  searchParams: Promise<{ status?: string; priority?: string; q?: string }>;
 }) {
   const user = await requireUser(["employee"]);
-  const { status, priority } = await searchParams;
-  const conversations = await listConversations({ status, priority, assignedOnly: user.id });
+  const { status, priority, q } = await searchParams;
+  const conversations = await listConversations({ status, priority, q, assignedOnly: user.id });
 
   return (
     <>
       <PageHeader title="My Conversations" description="Conversations assigned to you." />
       <div className="p-8">
-        <FilterBar basePath="/employee/conversations" currentStatus={status} currentPriority={priority} />
+        <FilterBar basePath="/employee/conversations" currentStatus={status} currentPriority={priority} currentQuery={q} />
         <ConversationList conversations={conversations} basePath="/employee/conversations" />
       </div>
     </>

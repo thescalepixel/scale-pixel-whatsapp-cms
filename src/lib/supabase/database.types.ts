@@ -224,6 +224,7 @@ export type Database = {
         Row: {
           assigned_employee_id: string | null
           assigned_supervisor_id: string | null
+          awaiting_response: boolean
           client_id: string
           created_at: string
           customer_id: string
@@ -240,6 +241,7 @@ export type Database = {
         Insert: {
           assigned_employee_id?: string | null
           assigned_supervisor_id?: string | null
+          awaiting_response?: boolean
           client_id: string
           created_at?: string
           customer_id: string
@@ -256,6 +258,7 @@ export type Database = {
         Update: {
           assigned_employee_id?: string | null
           assigned_supervisor_id?: string | null
+          awaiting_response?: boolean
           client_id?: string
           created_at?: string
           customer_id?: string
@@ -837,6 +840,17 @@ export type Database = {
       has_permission: {
         Args: { perm_key: string }
         Returns: boolean
+      }
+      notify: {
+        Args: {
+          p_user_id: string
+          p_type: string
+          p_title: string
+          p_body?: string
+          p_link_path?: string | null
+          p_payload?: Json
+        }
+        Returns: string
       }
       write_audit: {
         Args: {

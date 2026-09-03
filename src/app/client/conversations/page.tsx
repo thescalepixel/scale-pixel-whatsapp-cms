@@ -6,16 +6,16 @@ import { listConversations } from "@/lib/conversations/queries";
 export default async function ClientConversationsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; priority?: string }>;
+  searchParams: Promise<{ status?: string; priority?: string; q?: string }>;
 }) {
-  const { status, priority } = await searchParams;
-  const conversations = await listConversations({ status, priority });
+  const { status, priority, q } = await searchParams;
+  const conversations = await listConversations({ status, priority, q });
 
   return (
     <>
       <PageHeader title="Conversations" description="Your WhatsApp conversations." />
       <div className="p-8">
-        <FilterBar basePath="/client/conversations" currentStatus={status} currentPriority={priority} />
+        <FilterBar basePath="/client/conversations" currentStatus={status} currentPriority={priority} currentQuery={q} />
         <ConversationList conversations={conversations} basePath="/client/conversations" />
       </div>
     </>

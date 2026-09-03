@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { ConversationListRow, MessageRow, NoteRow } from "./types";
 
 const LIST_SELECT = `
-  id, status, priority, unread_count, last_message_at, created_at,
+  id, status, priority, unread_count, awaiting_response, last_message_at, created_at,
   client:client_id ( id, company_name ),
   whatsapp_account:whatsapp_account_id ( id, display_name ),
   customer:customer_id ( id, name, whatsapp_number ),
@@ -16,7 +16,11 @@ export type ConversationFilters = {
   priority?: string;
   assignedOnly?: string; // employee id — filters to assigned_employee_id = this
   unassignedOnly?: boolean;
+  q?: string; // matches customer name or WhatsApp number
 };
+
+// Search needs an inner join on customer so PostgREST can filter by it.
+const LIST_SELECT_SEARCHABLE = LIST_SELECT.replace("customer:customer_id (", "customer:customer_id!inner (");
 
 /**
  * Loads conversations visible to the caller. RLS (conversations_select)
@@ -26,12 +30,19 @@ export type ConversationFilters = {
  */
 export async function listConversations(filters: ConversationFilters = {}): Promise<ConversationListRow[]> {
   const supabase = await createClient();
-  let query = supabase.from("conversations").select(LIST_SELECT).order("last_message_at", { ascending: false });
+  const q = filters.q?.trim();
+  let query = supabase
+    .from("conversations")
+    .select(q ? LIST_SELECT_SEARCHABLE : LIST_SELECT)
+    .order("last_message_at", { ascending: false });
 
   if (filters.status) query = query.eq("status", filters.status as never);
   if (filters.priority) query = query.eq("priority", filters.priority as never);
   if (filters.assignedOnly) query = query.eq("assigned_employee_id", filters.assignedOnly);
   if (filters.unassignedOnly) query = query.is("assigned_employee_id", null);
+  if (q) {
+    query = query.or(`name.ilike.%${q}%,whatsapp_number.ilike.%${q}%`, { foreignTable: "customer" });
+  }
 
   const { data, error } = await query;
   if (error || !data) return [];
@@ -42,6 +53,7 @@ export async function listConversations(filters: ConversationFilters = {}): Prom
       status: ConversationListRow["status"];
       priority: ConversationListRow["priority"];
       unread_count: number;
+      awaiting_response: boolean;
       last_message_at: string | null;
       created_at: string;
       client: { id: string; company_name: string } | { id: string; company_name: string }[] | null;
@@ -56,6 +68,7 @@ export async function listConversations(filters: ConversationFilters = {}): Prom
       status: r.status,
       priority: r.priority,
       unread_count: r.unread_count,
+      awaiting_response: r.awaiting_response,
       last_message_at: r.last_message_at,
       created_at: r.created_at,
       client: one(r.client),
