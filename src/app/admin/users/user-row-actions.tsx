@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useTransition } from "react";
 import { setUserStatusAction, resetUserPasswordAction } from "./actions";
 import type { Enums } from "@/lib/supabase/database.types";
@@ -50,6 +51,18 @@ export function UserRowActions({
       <ActionButton onClick={resetPassword} disabled={pending}>
         Reset password
       </ActionButton>
+      <Link
+        href={`/admin/audit-logs?user=${userId}`}
+        className="rounded-md border border-zinc-200 px-2 py-1 font-medium text-zinc-600 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800"
+      >
+        View activity
+      </Link>
+      <Link
+        href={`/admin/users/${userId}/permissions`}
+        className="rounded-md border border-zinc-200 px-2 py-1 font-medium text-zinc-600 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800"
+      >
+        Permissions
+      </Link>
       {message && <span className="text-emerald-600 dark:text-emerald-400">{message}</span>}
     </div>
   );

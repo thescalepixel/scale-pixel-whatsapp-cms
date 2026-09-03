@@ -2,17 +2,33 @@ import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 
-export default async function AuditLogsPage() {
+export default async function AuditLogsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ user?: string }>;
+}) {
+  const { user } = await searchParams;
   const supabase = await createClient();
-  const { data: logs } = await supabase
+  let query = supabase
     .from("audit_logs")
     .select("id, action, resource_type, resource_id, role, created_at, actor:user_id(full_name, email)")
     .order("created_at", { ascending: false })
     .limit(200);
+  if (user) query = query.eq("user_id", user);
+  const { data: logs } = await query;
+
+  const filteredName = user ? (Array.isArray(logs?.[0]?.actor) ? logs[0].actor[0]?.full_name : logs?.[0]?.actor?.full_name) : null;
 
   return (
     <>
-      <PageHeader title="Audit Logs" description="Read-only. Every recorded action, newest first." />
+      <PageHeader
+        title="Audit Logs"
+        description={
+          user
+            ? `Read-only. Filtered to ${filteredName ?? "this user"}.`
+            : "Read-only. Every recorded action, newest first."
+        }
+      />
       <div className="p-8">
         <div className="overflow-x-auto rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
           <table className="w-full text-left text-sm">
