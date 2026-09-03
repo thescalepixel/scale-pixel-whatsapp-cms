@@ -1,6 +1,6 @@
 import "server-only";
 
-const GRAPH_API_VERSION = "v21.0";
+export const GRAPH_API_VERSION = "v21.0";
 
 export type SendResult =
   | { ok: true; whatsappMessageId: string }

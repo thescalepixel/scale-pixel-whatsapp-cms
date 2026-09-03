@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { verifyWebhookSignature } from "@/lib/whatsapp/cloud-api";
+import { getDecryptedAppSecretForWebhook } from "@/lib/whatsapp/meta-connection";
 
 // Meta's one-time webhook verification handshake (Meta App dashboard ->
 // WhatsApp -> Configuration -> Webhook -> Verify and save).
@@ -24,7 +25,13 @@ type WebhookValue = {
 
 export async function POST(request: NextRequest) {
   const rawBody = await request.text();
-  const appSecret = process.env.WHATSAPP_APP_SECRET;
+  const admin = createAdminClient();
+
+  // App Secret lives encrypted in the DB now (set via Admin -> Settings ->
+  // Meta Connection) so it never needs to touch .env.local or get typed
+  // into a chat. WHATSAPP_APP_SECRET is kept as a fallback only for anyone
+  // still using the older env-var-based setup.
+  const appSecret = (await getDecryptedAppSecretForWebhook(admin)) ?? process.env.WHATSAPP_APP_SECRET;
 
   if (appSecret) {
     const signature = request.headers.get("x-hub-signature-256");
@@ -43,8 +50,6 @@ export async function POST(request: NextRequest) {
   } catch {
     return NextResponse.json({ ok: true });
   }
-
-  const admin = createAdminClient();
 
   for (const entry of payload.entry ?? []) {
     for (const change of entry.changes ?? []) {

@@ -7,7 +7,7 @@ export default async function AdminWhatsAppAccountsPage() {
   const supabase = await createClient();
   const { data: accounts } = await supabase
     .from("whatsapp_accounts")
-    .select("id, display_name, phone_number, status, connected_at, client:client_id ( company_name )")
+    .select("id, display_name, phone_number, status, connected_at, connected_via, client:client_id ( company_name )")
     .order("created_at", { ascending: false });
 
   return (
@@ -16,12 +16,20 @@ export default async function AdminWhatsAppAccountsPage() {
         title="WhatsApp Accounts"
         description="WhatsApp Business accounts connected per client."
         actions={
-          <Link
-            href="/admin/whatsapp-accounts/new"
-            className="rounded-md bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700"
-          >
-            Connect account
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/admin/settings/meta-connection"
+              className="rounded-md border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+            >
+              Discover from Meta
+            </Link>
+            <Link
+              href="/admin/whatsapp-accounts/new"
+              className="rounded-md bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700"
+            >
+              Connect account
+            </Link>
+          </div>
         }
       />
       <div className="p-8">
@@ -51,7 +59,14 @@ export default async function AdminWhatsAppAccountsPage() {
                     <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400">{client?.company_name ?? "—"}</td>
                     <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400">{a.phone_number}</td>
                     <td className="px-4 py-3">
-                      <Badge tone={a.status}>{a.status}</Badge>
+                      <div className="flex items-center gap-1.5">
+                        <Badge tone={a.status}>{a.status}</Badge>
+                        {a.connected_via === "meta_sync" && (
+                          <span className="text-xs text-zinc-400" title="Added via Meta discovery">
+                            synced
+                          </span>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 );

@@ -1,5 +1,3 @@
-// Auto-generated from the Supabase schema (project: scale-pixel-whatsapp-cms).
-// Regenerate after schema changes rather than hand-editing.
 export type Json =
   | string
   | number
@@ -9,6 +7,8 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
@@ -480,6 +480,53 @@ export type Database = {
           },
         ]
       }
+      meta_business_connections: {
+        Row: {
+          app_secret_encrypted: string
+          business_id: string
+          business_name: string | null
+          connected_at: string
+          connected_by: string | null
+          created_at: string
+          id: string
+          last_synced_at: string | null
+          system_user_token_encrypted: string
+          updated_at: string
+        }
+        Insert: {
+          app_secret_encrypted: string
+          business_id: string
+          business_name?: string | null
+          connected_at?: string
+          connected_by?: string | null
+          created_at?: string
+          id?: string
+          last_synced_at?: string | null
+          system_user_token_encrypted: string
+          updated_at?: string
+        }
+        Update: {
+          app_secret_encrypted?: string
+          business_id?: string
+          business_name?: string | null
+          connected_at?: string
+          connected_by?: string | null
+          created_at?: string
+          id?: string
+          last_synced_at?: string | null
+          system_user_token_encrypted?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meta_business_connections_connected_by_fkey"
+            columns: ["connected_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           body: string
@@ -787,6 +834,7 @@ export type Database = {
           access_token_encrypted: string | null
           client_id: string
           connected_at: string | null
+          connected_via: string
           created_at: string
           display_name: string
           id: string
@@ -800,6 +848,7 @@ export type Database = {
           access_token_encrypted?: string | null
           client_id: string
           connected_at?: string | null
+          connected_via?: string
           created_at?: string
           display_name: string
           id?: string
@@ -813,6 +862,7 @@ export type Database = {
           access_token_encrypted?: string | null
           client_id?: string
           connected_at?: string | null
+          connected_via?: string
           created_at?: string
           display_name?: string
           id?: string
@@ -837,30 +887,31 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      has_permission: {
-        Args: { perm_key: string }
-        Returns: boolean
-      }
+      has_permission: { Args: { perm_key: string }; Returns: boolean }
       notify: {
         Args: {
-          p_user_id: string
-          p_type: string
-          p_title: string
           p_body?: string
-          p_link_path?: string | null
+          p_link_path?: string
           p_payload?: Json
+          p_title: string
+          p_type: string
+          p_user_id: string
         }
         Returns: string
       }
       write_audit: {
         Args: {
           p_action: string
-          p_resource_type: string
-          p_resource_id: string | null
+          // p_client_id/p_resource_id have no SQL DEFAULT (so the generator
+          // marks them required) but both are plain nullable uuid params —
+          // every caller in this codebase legitimately passes null for
+          // action types with no associated client/resource.
           p_client_id: string | null
-          p_previous_value?: Json | null
-          p_new_value?: Json | null
-          p_ip_address?: string | null
+          p_ip_address?: unknown
+          p_new_value?: Json
+          p_previous_value?: Json
+          p_resource_id: string | null
+          p_resource_type: string
         }
         Returns: string
       }
@@ -894,19 +945,149 @@ export type Database = {
   }
 }
 
-type DefaultSchema = Database["public"]
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
-  T extends keyof DefaultSchema["Tables"],
-> = DefaultSchema["Tables"][T]["Row"]
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
 
 export type TablesInsert<
-  T extends keyof DefaultSchema["Tables"],
-> = DefaultSchema["Tables"][T]["Insert"]
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
 
 export type TablesUpdate<
-  T extends keyof DefaultSchema["Tables"],
-> = DefaultSchema["Tables"][T]["Update"]
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
 
-export type Enums<T extends keyof DefaultSchema["Enums"]> =
-  DefaultSchema["Enums"][T]
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never) = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never) = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  public: {
+    Enums: {
+      assignment_strategy: [
+        "round_robin",
+        "least_active",
+        "whatsapp_account",
+        "client_based",
+        "supervisor_based",
+        "manual",
+      ],
+      client_permission_level: [
+        "view_only",
+        "view_notes",
+        "view_reply",
+        "full",
+      ],
+      client_status: ["active", "suspended", "inactive"],
+      conversation_priority: ["low", "normal", "high", "urgent"],
+      conversation_status: ["new", "open", "pending", "resolved"],
+      message_direction: ["in", "out"],
+      message_sender_type: ["customer", "employee", "system"],
+      message_status: ["sent", "delivered", "read", "failed"],
+      user_role: ["admin", "supervisor", "client", "employee"],
+      user_status: ["active", "inactive", "suspended"],
+      whatsapp_account_status: ["connected", "disconnected"],
+    },
+  },
+} as const
