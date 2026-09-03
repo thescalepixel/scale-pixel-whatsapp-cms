@@ -1,5 +1,15 @@
-import { ComingSoon } from "@/components/ui/coming-soon";
+import { PageHeader } from "@/components/ui/page-header";
+import { NotificationsList } from "@/components/notifications/notifications-list";
+import { listMyNotifications } from "@/lib/notifications/queries";
 
-export default function Page() {
-  return <ComingSoon title="Notifications" />;
+export default async function AdminNotificationsPage() {
+  const notifications = await listMyNotifications();
+  return (
+    <>
+      <PageHeader title="Notifications" />
+      <div className="p-8">
+        <NotificationsList notifications={notifications} />
+      </div>
+    </>
+  );
 }

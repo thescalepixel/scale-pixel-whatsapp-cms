@@ -72,7 +72,7 @@ export async function getConversationDetail(id: string) {
   const { data: conversation } = await supabase.from("conversations").select(LIST_SELECT).eq("id", id).single();
   if (!conversation) return null;
 
-  const [{ data: messages }, { data: notes }, { data: allTags }] = await Promise.all([
+  const [{ data: messages }, { data: notes }, { data: allTags }, { data: waAccount }] = await Promise.all([
     supabase
       .from("messages")
       .select("id, direction, sender_type, body, status, created_at")
@@ -84,7 +84,17 @@ export async function getConversationDetail(id: string) {
       .eq("conversation_id", id)
       .order("created_at", { ascending: true }),
     supabase.from("tags").select("id, name, color").order("name"),
+    // access_token_encrypted is ciphertext, not a secret in cleartext, but
+    // we still only use it to compute a boolean here — never forward the
+    // value itself to a client component.
+    supabase
+      .from("conversations")
+      .select("whatsapp_account:whatsapp_account_id ( status, access_token_encrypted )")
+      .eq("id", id)
+      .single(),
   ]);
+  const waRow = Array.isArray(waAccount?.whatsapp_account) ? waAccount.whatsapp_account[0] : waAccount?.whatsapp_account;
+  const isLiveConnected = waRow?.status === "connected" && !!waRow?.access_token_encrypted;
 
   const r = conversation as unknown as {
     id: string;
@@ -124,5 +134,6 @@ export async function getConversationDetail(id: string) {
       return { ...note, author: one(note.author) } as NoteRow;
     }),
     allTags: allTags ?? [],
+    isLiveConnected,
   };
 }

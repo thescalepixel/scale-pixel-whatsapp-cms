@@ -1,5 +1,6 @@
 import { requireUser } from "@/lib/auth/session";
 import { AppShell, type NavItem } from "@/components/shell/app-shell";
+import { getUnreadNotificationCount } from "@/lib/notifications/queries";
 
 const NAV: NavItem[] = [
   { label: "Dashboard", href: "/supervisor/dashboard" },
@@ -14,8 +15,9 @@ const NAV: NavItem[] = [
 
 export default async function SupervisorLayout({ children }: { children: React.ReactNode }) {
   const user = await requireUser(["supervisor"]);
+  const unreadNotifications = await getUnreadNotificationCount();
   return (
-    <AppShell user={user} navItems={NAV}>
+    <AppShell user={user} navItems={NAV} unreadNotifications={unreadNotifications}>
       {children}
     </AppShell>
   );

@@ -14,10 +14,12 @@ const ROLE_LABEL: Record<CurrentUser["role"], string> = {
 export function AppShell({
   user,
   navItems,
+  unreadNotifications = 0,
   children,
 }: {
   user: CurrentUser;
   navItems: NavItem[];
+  unreadNotifications?: number;
   children: React.ReactNode;
 }) {
   return (
@@ -38,9 +40,14 @@ export function AppShell({
             <Link
               key={item.href}
               href={item.href}
-              className="block rounded-md px-3 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-50"
+              className="flex items-center justify-between rounded-md px-3 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-50"
             >
               {item.label}
+              {item.label === "Notifications" && unreadNotifications > 0 && (
+                <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-emerald-600 px-1.5 text-xs font-semibold text-white">
+                  {unreadNotifications > 99 ? "99+" : unreadNotifications}
+                </span>
+              )}
             </Link>
           ))}
         </nav>

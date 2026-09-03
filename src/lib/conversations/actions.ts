@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requireUser } from "@/lib/auth/session";
 import { writeAudit } from "@/lib/audit";
+import { sendWhatsAppTextMessage } from "@/lib/whatsapp/cloud-api";
+import { decryptToken } from "@/lib/whatsapp/crypto";
 import type { Enums, TablesUpdate } from "@/lib/supabase/database.types";
 
 /**
@@ -31,13 +33,49 @@ export async function sendMessageAction(conversationId: string, formData: FormDa
 
   const supabase = await createClient();
 
+  // Attempt a real Cloud API send only if this conversation's WhatsApp
+  // account is genuinely connected (has a stored access token). Seeded/
+  // test accounts have none, so they stay in DB-only "test mode" — the
+  // message is recorded and visible in the thread, just never actually
+  // delivered to WhatsApp.
+  const { data: convForSend } = await supabase
+    .from("conversations")
+    .select(
+      "customer:customer_id ( whatsapp_number ), whatsapp_account:whatsapp_account_id ( phone_number_id, access_token_encrypted, status )",
+    )
+    .eq("id", conversationId)
+    .single();
+
+  const account = Array.isArray(convForSend?.whatsapp_account)
+    ? convForSend.whatsapp_account[0]
+    : convForSend?.whatsapp_account;
+  const customer = Array.isArray(convForSend?.customer) ? convForSend.customer[0] : convForSend?.customer;
+
+  let status: Enums<"message_status"> = "sent";
+  let whatsappMessageId: string | null = null;
+
+  if (account?.access_token_encrypted && account.status === "connected" && customer?.whatsapp_number) {
+    const result = await sendWhatsAppTextMessage({
+      phoneNumberId: account.phone_number_id,
+      accessToken: decryptToken(account.access_token_encrypted),
+      to: customer.whatsapp_number,
+      body,
+    });
+    if (result.ok) {
+      whatsappMessageId = result.whatsappMessageId;
+    } else {
+      status = "failed";
+    }
+  }
+
   const { error } = await supabase.from("messages").insert({
     conversation_id: conversationId,
     direction: "out",
     sender_type: "employee", // any staff role (admin/supervisor/employee/client-with-reply) — schema has no finer distinction
     sender_id: user.id,
     body,
-    status: "sent",
+    status,
+    whatsapp_message_id: whatsappMessageId,
   });
   if (error) throw new Error("Couldn't send message.");
 

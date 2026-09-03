@@ -25,7 +25,7 @@ export function ConversationDetailView({
   canUpdateStatus: boolean;
   canTag: boolean;
 }) {
-  const { conversation, messages, notes, allTags } = detail;
+  const { conversation, messages, notes, allTags, isLiveConnected } = detail;
 
   return (
     <>
@@ -39,6 +39,13 @@ export function ConversationDetailView({
           </div>
         }
       />
+
+      {!isLiveConnected && (
+        <div className="border-b border-zinc-200 bg-zinc-100 px-8 py-2 text-center text-xs font-medium text-zinc-600 dark:border-zinc-800 dark:bg-zinc-800/50 dark:text-zinc-400">
+          Test mode — this WhatsApp account isn&apos;t connected to Meta yet. Replies are saved here but not sent to
+          the customer.
+        </div>
+      )}
 
       <div className="grid grid-cols-1 gap-6 p-8 lg:grid-cols-[1fr_280px]">
         <div className="flex flex-col rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
