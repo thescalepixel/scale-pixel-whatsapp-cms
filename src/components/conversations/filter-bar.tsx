@@ -34,7 +34,7 @@ export function FilterBar({
           type="search"
           name="q"
           defaultValue={currentQuery}
-          placeholder="Search by customer name or number…"
+          placeholder="Search by customer name, number, or message content…"
           className="flex-1 rounded-md border border-zinc-300 px-3 py-1.5 text-sm outline-none focus:border-emerald-500 dark:border-zinc-700 dark:bg-zinc-950"
         />
         <button className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800">

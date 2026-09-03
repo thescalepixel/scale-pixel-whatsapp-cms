@@ -117,6 +117,53 @@ export async function setUserStatusAction(userId: string, status: Enums<"user_st
   revalidatePath("/admin/users");
 }
 
+/**
+ * Changes an existing user's role. Every role-specific association
+ * (client_users, employee_clients, supervisor_clients, whatsapp_account_
+ * employees, and being someone's supervisor) is tied to the OLD role and
+ * makes no sense under the new one, so it's cleared here — the admin
+ * re-assigns the user from the Clients/WhatsApp Accounts screens
+ * afterward, same flow as setting up a brand new account.
+ */
+export async function changeUserRoleAction(
+  _prevState: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  await requireUser(["admin"]);
+  const supabase = await createClient();
+
+  const userId = String(formData.get("user_id") ?? "");
+  const newRole = String(formData.get("role") ?? "") as Enums<"user_role">;
+  if (!userId || !newRole) return { error: "Missing user or role." };
+
+  const { data: before } = await supabase.from("users").select("role").eq("id", userId).single();
+  if (!before) return { error: "User not found." };
+  if (before.role === newRole) return { error: null };
+
+  await Promise.all([
+    supabase.from("client_users").delete().eq("user_id", userId),
+    supabase.from("employee_clients").delete().eq("employee_id", userId),
+    supabase.from("supervisor_clients").delete().eq("supervisor_id", userId),
+    supabase.from("whatsapp_account_employees").delete().eq("employee_id", userId),
+    supabase.from("users").update({ supervisor_id: null }).eq("supervisor_id", userId),
+    supabase.from("conversations").update({ assigned_employee_id: null }).eq("assigned_employee_id", userId),
+  ]);
+
+  const { error } = await supabase.from("users").update({ role: newRole, supervisor_id: null }).eq("id", userId);
+  if (error) return { error: "Couldn't change the role." };
+
+  await writeAudit({
+    action: "user.change_role",
+    resourceType: "user",
+    resourceId: userId,
+    previousValue: before,
+    newValue: { role: newRole },
+  });
+
+  revalidatePath("/admin/users");
+  return { error: null };
+}
+
 export async function resetUserPasswordAction(userId: string, email: string) {
   await requireUser(["admin"]);
   const supabase = await createClient();

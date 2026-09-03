@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import type { ConversationListRow } from "@/lib/conversations/types";
 import { getResponseThresholdsMap, thresholdsFor, computeResponseIndicator } from "@/lib/response-time";
+import { RealtimeRefresher } from "@/components/realtime-refresher";
 
 function timeAgo(iso: string | null) {
   if (!iso) return "—";
@@ -30,17 +31,27 @@ export async function ConversationList({
   showClient?: boolean;
 }) {
   const thresholdsMap = await getResponseThresholdsMap();
+  // No filter: RLS still governs what this connection actually receives —
+  // this just triggers a refresh on any conversation change this session
+  // is authorized to see, since a list can be scoped several different
+  // ways (assigned-to-me, unassigned queue, whole client, everything).
+  const liveRefresher = <RealtimeRefresher channelName={`conversations-${basePath}`} table="conversations" />;
 
   if (conversations.length === 0) {
     return (
-      <div className="rounded-lg border border-dashed border-zinc-300 bg-white p-10 text-center text-sm text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400">
-        No conversations here.
-      </div>
+      <>
+        {liveRefresher}
+        <div className="rounded-lg border border-dashed border-zinc-300 bg-white p-10 text-center text-sm text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400">
+          No conversations here.
+        </div>
+      </>
     );
   }
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+    <>
+      {liveRefresher}
+      <div className="overflow-x-auto rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
       <table className="w-full text-left text-sm">
         <thead className="border-b border-zinc-200 bg-zinc-50 text-xs font-medium uppercase tracking-wide text-zinc-500 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-400">
           <tr>
@@ -120,6 +131,7 @@ export async function ConversationList({
           })}
         </tbody>
       </table>
-    </div>
+      </div>
+    </>
   );
 }

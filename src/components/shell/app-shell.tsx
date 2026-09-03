@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { logout } from "@/lib/auth/actions";
 import type { CurrentUser } from "@/lib/auth/session";
+import { RealtimeRefresher } from "@/components/realtime-refresher";
 
 export type NavItem = { label: string; href: string };
 
@@ -24,6 +25,11 @@ export function AppShell({
 }) {
   return (
     <div className="flex min-h-screen bg-zinc-50 dark:bg-zinc-950">
+      <RealtimeRefresher
+        channelName={`notifications-${user.id}`}
+        table="notifications"
+        filter={`user_id=eq.${user.id}`}
+      />
       <aside className="flex w-60 shrink-0 flex-col border-r border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
         <div className="flex items-center gap-2 px-5 py-5">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 text-sm font-semibold text-white">

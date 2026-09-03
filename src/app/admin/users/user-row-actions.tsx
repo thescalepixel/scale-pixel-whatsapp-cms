@@ -2,20 +2,26 @@
 
 import Link from "next/link";
 import { useState, useTransition } from "react";
-import { setUserStatusAction, resetUserPasswordAction } from "./actions";
+import { setUserStatusAction, resetUserPasswordAction, changeUserRoleAction } from "./actions";
 import type { Enums } from "@/lib/supabase/database.types";
+
+const ROLES: Enums<"user_role">[] = ["admin", "supervisor", "client", "employee"];
 
 export function UserRowActions({
   userId,
   email,
   status,
+  role,
 }: {
   userId: string;
   email: string;
   status: Enums<"user_status">;
+  role: Enums<"user_role">;
 }) {
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
+  const [changingRole, setChangingRole] = useState(false);
+  const [newRole, setNewRole] = useState<Enums<"user_role">>(role);
 
   function setStatus(next: Enums<"user_status">) {
     startTransition(async () => {
@@ -29,6 +35,47 @@ export function UserRowActions({
       setMessage("Reset link sent");
       setTimeout(() => setMessage(null), 3000);
     });
+  }
+
+  function confirmRoleChange() {
+    if (newRole === role) {
+      setChangingRole(false);
+      return;
+    }
+    const formData = new FormData();
+    formData.set("user_id", userId);
+    formData.set("role", newRole);
+    startTransition(async () => {
+      await changeUserRoleAction({ error: null }, formData);
+      setChangingRole(false);
+    });
+  }
+
+  if (changingRole) {
+    return (
+      <div className="flex flex-wrap items-center gap-2 text-xs">
+        <select
+          value={newRole}
+          onChange={(e) => setNewRole(e.target.value as Enums<"user_role">)}
+          className="rounded-md border border-zinc-300 px-2 py-1 text-xs outline-none focus:border-emerald-500 dark:border-zinc-700 dark:bg-zinc-950"
+        >
+          {ROLES.map((r) => (
+            <option key={r} value={r}>
+              {r}
+            </option>
+          ))}
+        </select>
+        <ActionButton onClick={confirmRoleChange} disabled={pending} tone="success">
+          Confirm
+        </ActionButton>
+        <ActionButton onClick={() => setChangingRole(false)} disabled={pending}>
+          Cancel
+        </ActionButton>
+        {newRole !== role && (
+          <span className="text-amber-600 dark:text-amber-400">Clears this user&apos;s client/team assignments.</span>
+        )}
+      </div>
+    );
   }
 
   return (
@@ -50,6 +97,9 @@ export function UserRowActions({
       )}
       <ActionButton onClick={resetPassword} disabled={pending}>
         Reset password
+      </ActionButton>
+      <ActionButton onClick={() => setChangingRole(true)} disabled={pending}>
+        Change role
       </ActionButton>
       <Link
         href={`/admin/audit-logs?user=${userId}`}

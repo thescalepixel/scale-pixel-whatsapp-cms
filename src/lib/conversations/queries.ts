@@ -16,11 +16,8 @@ export type ConversationFilters = {
   priority?: string;
   assignedOnly?: string; // employee id — filters to assigned_employee_id = this
   unassignedOnly?: boolean;
-  q?: string; // matches customer name or WhatsApp number
+  q?: string; // matches customer name, WhatsApp number, or message content
 };
-
-// Search needs an inner join on customer so PostgREST can filter by it.
-const LIST_SELECT_SEARCHABLE = LIST_SELECT.replace("customer:customer_id (", "customer:customer_id!inner (");
 
 /**
  * Loads conversations visible to the caller. RLS (conversations_select)
@@ -31,18 +28,36 @@ const LIST_SELECT_SEARCHABLE = LIST_SELECT.replace("customer:customer_id (", "cu
 export async function listConversations(filters: ConversationFilters = {}): Promise<ConversationListRow[]> {
   const supabase = await createClient();
   const q = filters.q?.trim();
+
+  // Search spans two unrelated tables (customers, messages), each RLS-
+  // scoped on its own — resolve both to a conversation-id set first, then
+  // filter the main query by id, rather than trying to force one PostgREST
+  // query to OR across two joins.
+  let matchingIds: string[] | null = null;
+  if (q) {
+    const [{ data: byCustomer }, { data: byMessage }] = await Promise.all([
+      supabase
+        .from("conversations")
+        .select("id, customer:customer_id!inner ( id )")
+        .or(`name.ilike.%${q}%,whatsapp_number.ilike.%${q}%`, { foreignTable: "customer" }),
+      supabase.from("messages").select("conversation_id").ilike("body", `%${q}%`).limit(200),
+    ]);
+    matchingIds = [
+      ...new Set([...(byCustomer ?? []).map((r) => r.id), ...(byMessage ?? []).map((r) => r.conversation_id)]),
+    ];
+    if (matchingIds.length === 0) return [];
+  }
+
   let query = supabase
     .from("conversations")
-    .select(q ? LIST_SELECT_SEARCHABLE : LIST_SELECT)
+    .select(LIST_SELECT)
     .order("last_message_at", { ascending: false });
 
   if (filters.status) query = query.eq("status", filters.status as never);
   if (filters.priority) query = query.eq("priority", filters.priority as never);
   if (filters.assignedOnly) query = query.eq("assigned_employee_id", filters.assignedOnly);
   if (filters.unassignedOnly) query = query.is("assigned_employee_id", null);
-  if (q) {
-    query = query.or(`name.ilike.%${q}%,whatsapp_number.ilike.%${q}%`, { foreignTable: "customer" });
-  }
+  if (matchingIds) query = query.in("id", matchingIds);
 
   const { data, error } = await query;
   if (error || !data) return [];

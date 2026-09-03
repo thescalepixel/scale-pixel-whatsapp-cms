@@ -36,6 +36,38 @@ export async function updateGlobalResponseThresholdsAction(
   return { error: null };
 }
 
+export async function setClientThresholdsAction(clientId: string, formData: FormData) {
+  await requireUser(["admin"]);
+  const supabase = await createClient();
+
+  const targetMinutes = Number(formData.get("target_minutes"));
+  const warningMinutes = Number(formData.get("warning_minutes"));
+  if (!targetMinutes || !warningMinutes || warningMinutes >= targetMinutes) return;
+
+  await supabase
+    .from("response_time_settings")
+    .upsert(
+      { client_id: clientId, target_seconds: targetMinutes * 60, warning_seconds: warningMinutes * 60 },
+      { onConflict: "client_id" },
+    );
+
+  await writeAudit({
+    action: "settings.response_thresholds_update",
+    resourceType: "response_time_settings",
+    clientId,
+    newValue: { target_minutes: targetMinutes, warning_minutes: warningMinutes },
+  });
+  revalidatePath("/admin/settings");
+}
+
+export async function clearClientThresholdsAction(clientId: string) {
+  await requireUser(["admin"]);
+  const supabase = await createClient();
+  await supabase.from("response_time_settings").delete().eq("client_id", clientId);
+  await writeAudit({ action: "settings.response_thresholds_reset", resourceType: "response_time_settings", clientId });
+  revalidatePath("/admin/settings");
+}
+
 export async function setAssignmentRuleAction(formData: FormData) {
   await requireUser(["admin"]);
   const supabase = await createClient();

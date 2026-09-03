@@ -99,7 +99,7 @@ export default async function AdminUsersPage({
                       {u.last_login_at ? new Date(u.last_login_at).toLocaleString() : "Never"}
                     </td>
                     <td className="px-4 py-3">
-                      <UserRowActions userId={u.id} email={u.email} status={u.status} />
+                      <UserRowActions userId={u.id} email={u.email} status={u.status} role={u.role} />
                     </td>
                   </tr>
                 );

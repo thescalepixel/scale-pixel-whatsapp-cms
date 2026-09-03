@@ -4,6 +4,7 @@ import { MessageThread } from "./message-thread";
 import { ReplyBox } from "./reply-box";
 import { NotesPanel } from "./notes-panel";
 import { ConversationSidebar } from "./conversation-sidebar";
+import { RealtimeRefresher } from "@/components/realtime-refresher";
 import type { getConversationDetail } from "@/lib/conversations/queries";
 
 type Detail = NonNullable<Awaited<ReturnType<typeof getConversationDetail>>>;
@@ -29,6 +30,16 @@ export function ConversationDetailView({
 
   return (
     <>
+      <RealtimeRefresher
+        channelName={`conversation-${conversation.id}`}
+        table="messages"
+        filter={`conversation_id=eq.${conversation.id}`}
+      />
+      <RealtimeRefresher
+        channelName={`conversation-row-${conversation.id}`}
+        table="conversations"
+        filter={`id=eq.${conversation.id}`}
+      />
       <PageHeader
         title={conversation.customer?.name || "Unknown customer"}
         description={`${conversation.customer?.whatsapp_number ?? ""} · ${conversation.client?.company_name ?? ""} · ${conversation.whatsapp_account?.display_name ?? ""}`}
