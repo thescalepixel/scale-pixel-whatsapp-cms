@@ -16,7 +16,11 @@ const ROLE_PREFIX: Record<string, string> = {
   employee: "/employee",
 };
 
-const PUBLIC_PATHS = ["/login", "/forgot-password", "/auth"];
+// /api/webhooks is Meta calling us directly — it has no browser session and
+// authenticates itself via the X-Hub-Signature-256 HMAC (see the route
+// handler), not a Supabase cookie. Gating it here would 302 every inbound
+// message to /login instead of ingesting it.
+const PUBLIC_PATHS = ["/login", "/forgot-password", "/auth", "/api/webhooks"];
 // Reachable whether or not the caller has a session — a password-recovery
 // link signs the user in just enough to call updateUser(), and an
 // authenticated visit here must NOT bounce to their dashboard.
