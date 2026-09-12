@@ -19,22 +19,32 @@ export default async function SupervisorDashboardPage() {
 
   return (
     <>
-      <PageHeader title="Dashboard" description="Your assigned clients and team." />
+      <PageHeader title="Dashboard" description="Your team and WhatsApp accounts." />
       <div className="grid grid-cols-1 gap-4 p-8 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Team members" value={teamSize ?? 0} />
-        <StatCard label="Online employees" value={onlineEmployees ?? 0} tone="success" />
-        <StatCard label="Active conversations" value={activeConversations ?? 0} />
+        <StatCard label="Team members" value={teamSize ?? 0} href="/supervisor/team" />
+        <StatCard label="Online employees" value={onlineEmployees ?? 0} tone="success" href="/supervisor/team" />
+        <StatCard
+          label="Active conversations"
+          value={activeConversations ?? 0}
+          href="/supervisor/conversations?status=open"
+        />
         <StatCard
           label="Unanswered conversations"
           value={unanswered ?? 0}
           tone={(unanswered ?? 0) > 0 ? "danger" : "default"}
+          href="/supervisor/conversations?status=new"
         />
-        <StatCard label="Pending conversations" value={pending ?? 0} tone="warning" />
+        <StatCard
+          label="Pending conversations"
+          value={pending ?? 0}
+          tone="warning"
+          href="/supervisor/conversations?status=pending"
+        />
       </div>
       <div className="px-8 pb-8">
         <div className="rounded-lg border border-dashed border-zinc-300 bg-white p-6 text-sm text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400">
-          Employee workload, client activity, and WhatsApp account activity charts land with the
-          Conversations + Analytics phases.
+          Employee workload and WhatsApp account activity charts land with the Conversations +
+          Analytics phases.
         </div>
       </div>
     </>

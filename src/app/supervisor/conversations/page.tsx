@@ -13,7 +13,7 @@ export default async function SupervisorConversationsPage({
 
   return (
     <>
-      <PageHeader title="Conversations" description="Conversations across your assigned clients." />
+      <PageHeader title="Conversations" description="Conversations across your WhatsApp accounts." />
       <div className="p-8">
         <FilterBar basePath="/supervisor/conversations" currentStatus={status} currentPriority={priority} currentQuery={q} />
         <ConversationList conversations={conversations} basePath="/supervisor/conversations" showAccount />

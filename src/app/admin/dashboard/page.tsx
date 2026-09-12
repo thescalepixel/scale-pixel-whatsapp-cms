@@ -49,20 +49,46 @@ export default async function AdminDashboardPage() {
         description="Platform-wide visibility across every supervisor's team."
       />
       <div className="grid grid-cols-1 gap-4 p-8 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Total supervisors" value={totalSupervisors} />
-        <StatCard label="Active supervisors" value={activeSupervisors} tone="success" />
-        <StatCard label="WhatsApp accounts" value={totalWhatsapp} />
-        <StatCard label="Connected accounts" value={connectedWhatsapp} tone="success" />
-        <StatCard label="Total employees" value={totalEmployees} />
-        <StatCard label="Online employees" value={onlineEmployees} tone="success" />
-        <StatCard label="Active conversations" value={activeConversations} />
+        <StatCard label="Total supervisors" value={totalSupervisors} href="/admin/users?role=supervisor" />
+        <StatCard
+          label="Active supervisors"
+          value={activeSupervisors}
+          tone="success"
+          href="/admin/users?role=supervisor"
+        />
+        <StatCard label="WhatsApp accounts" value={totalWhatsapp} href="/admin/whatsapp-accounts" />
+        <StatCard
+          label="Connected accounts"
+          value={connectedWhatsapp}
+          tone="success"
+          href="/admin/whatsapp-accounts"
+        />
+        <StatCard label="Total employees" value={totalEmployees} href="/admin/users?role=employee" />
+        <StatCard
+          label="Online employees"
+          value={onlineEmployees}
+          tone="success"
+          href="/admin/users?role=employee"
+        />
+        <StatCard label="Active conversations" value={activeConversations} href="/admin/conversations?status=open" />
         <StatCard
           label="Unanswered conversations"
           value={unansweredConversations}
           tone={unansweredConversations > 0 ? "danger" : "default"}
+          href="/admin/conversations?status=new"
         />
-        <StatCard label="Pending conversations" value={pendingConversations} tone="warning" />
-        <StatCard label="Resolved conversations" value={resolvedConversations} tone="success" />
+        <StatCard
+          label="Pending conversations"
+          value={pendingConversations}
+          tone="warning"
+          href="/admin/conversations?status=pending"
+        />
+        <StatCard
+          label="Resolved conversations"
+          value={resolvedConversations}
+          tone="success"
+          href="/admin/conversations?status=resolved"
+        />
       </div>
 
       <div className="px-8 pb-8">
