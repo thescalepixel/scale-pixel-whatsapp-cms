@@ -14,13 +14,19 @@ export type ConversationListRow = {
   tags: { id: string; name: string; color: string }[];
 };
 
+export type MessageMediaType = "image" | "video" | "audio" | "document";
+
 export type MessageRow = {
   id: string;
   direction: Enums<"message_direction">;
   sender_type: Enums<"message_sender_type">;
-  body: string;
+  body: string | null;
   status: Enums<"message_status">;
   created_at: string;
+  media_type: MessageMediaType | null;
+  media_filename: string | null;
+  /** Freshly-signed, short-lived URL — generated at read time, never stored. */
+  media_signed_url: string | null;
 };
 
 export type NoteRow = {

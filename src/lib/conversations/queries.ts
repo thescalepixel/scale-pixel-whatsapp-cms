@@ -1,5 +1,7 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { getSignedMediaUrls } from "@/lib/whatsapp/media-storage";
 import type { ConversationListRow, MessageRow, NoteRow } from "./types";
 
 const LIST_SELECT = `
@@ -103,7 +105,7 @@ export async function getConversationDetail(id: string) {
   const [{ data: messages }, { data: notes }, { data: allTags }, { data: waAccount }] = await Promise.all([
     supabase
       .from("messages")
-      .select("id, direction, sender_type, body, status, created_at")
+      .select("id, direction, sender_type, body, status, created_at, media_type, media_path, media_filename")
       .eq("conversation_id", id)
       .order("created_at", { ascending: true }),
     supabase
@@ -123,6 +125,15 @@ export async function getConversationDetail(id: string) {
   ]);
   const waRow = Array.isArray(waAccount?.whatsapp_account) ? waAccount.whatsapp_account[0] : waAccount?.whatsapp_account;
   const isLiveConnected = waRow?.status === "connected" && !!waRow?.access_token_encrypted;
+
+  // Sign every media path in one batch call. Safe to use the admin client
+  // here specifically because the messages array above was already fetched
+  // through the caller's own RLS-scoped session — we're only generating
+  // short-lived view URLs for rows they were already allowed to read.
+  type MediaMessageRow = MessageRow & { media_path: string | null };
+  const mediaRows = (messages ?? []) as unknown as MediaMessageRow[];
+  const mediaPaths = mediaRows.map((m) => m.media_path).filter((p): p is string => !!p);
+  const signedUrlByPath = mediaPaths.length ? await getSignedMediaUrls(createAdminClient(), mediaPaths) : new Map();
 
   const r = conversation as unknown as {
     id: string;
@@ -157,7 +168,10 @@ export async function getConversationDetail(id: string) {
       assigned_employee: one(r.assigned_employee),
       tags: (r.conversation_tags ?? []).map((ct) => one(ct.tags)).filter((t): t is { id: string; name: string; color: string } => !!t),
     },
-    messages: (messages ?? []) as MessageRow[],
+    messages: mediaRows.map((m) => ({
+      ...m,
+      media_signed_url: m.media_path ? (signedUrlByPath.get(m.media_path) ?? null) : null,
+    })) as MessageRow[],
     notes: ((notes ?? []) as unknown[]).map((n) => {
       const note = n as { id: string; body: string; author_role: NoteRow["author_role"]; created_at: string; author: { full_name: string } | { full_name: string }[] | null };
       return { ...note, author: one(note.author) } as NoteRow;

@@ -1,7 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { verifyWebhookSignature } from "@/lib/whatsapp/cloud-api";
+import { verifyWebhookSignature, getWhatsAppMediaUrl, downloadWhatsAppMedia } from "@/lib/whatsapp/cloud-api";
 import { getDecryptedAppSecretForWebhook } from "@/lib/whatsapp/meta-connection";
+import { decryptToken } from "@/lib/whatsapp/crypto";
+import { extensionForMime, uploadMediaToStorage } from "@/lib/whatsapp/media-storage";
 
 // Meta's one-time webhook verification handshake (Meta App dashboard ->
 // WhatsApp -> Configuration -> Webhook -> Verify and save).
@@ -17,10 +19,21 @@ export async function GET(request: NextRequest) {
   return new NextResponse("Forbidden", { status: 403 });
 }
 
+type InboundMedia = { id: string; mime_type: string; caption?: string; filename?: string };
 type WebhookValue = {
   metadata?: { phone_number_id?: string };
   contacts?: { profile?: { name?: string }; wa_id?: string }[];
-  messages?: { from: string; id: string; timestamp: string; type: string; text?: { body: string } }[];
+  messages?: {
+    from: string;
+    id: string;
+    timestamp: string;
+    type: string;
+    text?: { body: string };
+    image?: InboundMedia;
+    video?: InboundMedia;
+    audio?: InboundMedia;
+    document?: InboundMedia;
+  }[];
 };
 
 export async function POST(request: NextRequest) {
@@ -60,13 +73,16 @@ export async function POST(request: NextRequest) {
 
       const { data: account } = await admin
         .from("whatsapp_accounts")
-        .select("id, status")
+        .select("id, status, access_token_encrypted")
         .eq("phone_number_id", phoneNumberId)
         .single();
       if (!account || account.status !== "connected") continue;
 
       for (const msg of messages) {
-        if (msg.type !== "text" || !msg.text) continue; // media/other types: later phase
+        const mediaTypes = ["image", "video", "audio", "document"] as const;
+        const mediaType = mediaTypes.find((t) => msg.type === t);
+        const inboundMedia = mediaType ? msg[mediaType] : undefined;
+        if (msg.type !== "text" && !inboundMedia) continue; // unsupported type (location, sticker, reaction, etc.) — later phase
         const contactName = value?.contacts?.find((c) => c.wa_id === msg.from)?.profile?.name ?? "";
 
         const { data: customer } = await admin
@@ -108,6 +124,32 @@ export async function POST(request: NextRequest) {
         }
         if (!conversation) continue;
 
+        // Text and media both end up here, but media needs to be fetched
+        // from Meta and re-hosted in our own Storage bucket first — Meta's
+        // media URLs/ids expire within minutes, so this is the only copy
+        // that's still viewable later.
+        let mediaPath: string | null = null;
+        let mediaMimeType: string | null = null;
+        if (mediaType && inboundMedia && account.access_token_encrypted) {
+          const token = decryptToken(account.access_token_encrypted);
+          const urlRes = await getWhatsAppMediaUrl(inboundMedia.id, token);
+          if (urlRes.ok) {
+            const bytesRes = await downloadWhatsAppMedia(urlRes.url, token);
+            if (bytesRes.ok) {
+              const ext = extensionForMime(urlRes.mimeType);
+              const path = `conv/${conversation.id}/${msg.id}.${ext}`;
+              const uploadRes = await uploadMediaToStorage(admin, path, bytesRes.bytes, urlRes.mimeType);
+              if (uploadRes.ok) {
+                mediaPath = path;
+                mediaMimeType = urlRes.mimeType;
+              }
+            }
+          }
+          // If any step above failed, the message is still recorded below
+          // (as a media-typed row with no media_path) rather than dropped —
+          // better to show "photo unavailable" in the thread than nothing.
+        }
+
         // Inserting here fires app.handle_inbound_message() — reopens a
         // resolved conversation, bumps unread_count/last_message_at, and
         // notifies the assigned employee or the whole queue.
@@ -115,10 +157,14 @@ export async function POST(request: NextRequest) {
           conversation_id: conversation.id,
           direction: "in",
           sender_type: "customer",
-          body: msg.text.body,
+          body: msg.type === "text" ? (msg.text?.body ?? null) : (inboundMedia?.caption ?? null),
           whatsapp_message_id: msg.id,
           status: "delivered",
           created_at: new Date(Number(msg.timestamp) * 1000).toISOString(),
+          media_type: mediaType ?? null,
+          media_path: mediaPath,
+          media_mime_type: mediaMimeType,
+          media_filename: inboundMedia?.filename ?? null,
         });
       }
     }

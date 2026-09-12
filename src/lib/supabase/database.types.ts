@@ -300,33 +300,45 @@ export type Database = {
       }
       messages: {
         Row: {
-          body: string
+          body: string | null
           conversation_id: string
           created_at: string
           direction: Database["public"]["Enums"]["message_direction"]
           id: string
+          media_filename: string | null
+          media_mime_type: string | null
+          media_path: string | null
+          media_type: string | null
           sender_id: string | null
           sender_type: Database["public"]["Enums"]["message_sender_type"]
           status: Database["public"]["Enums"]["message_status"]
           whatsapp_message_id: string | null
         }
         Insert: {
-          body?: string
+          body?: string | null
           conversation_id: string
           created_at?: string
           direction: Database["public"]["Enums"]["message_direction"]
           id?: string
+          media_filename?: string | null
+          media_mime_type?: string | null
+          media_path?: string | null
+          media_type?: string | null
           sender_id?: string | null
           sender_type: Database["public"]["Enums"]["message_sender_type"]
           status?: Database["public"]["Enums"]["message_status"]
           whatsapp_message_id?: string | null
         }
         Update: {
-          body?: string
+          body?: string | null
           conversation_id?: string
           created_at?: string
           direction?: Database["public"]["Enums"]["message_direction"]
           id?: string
+          media_filename?: string | null
+          media_mime_type?: string | null
+          media_path?: string | null
+          media_type?: string | null
           sender_id?: string | null
           sender_type?: Database["public"]["Enums"]["message_sender_type"]
           status?: Database["public"]["Enums"]["message_status"]
