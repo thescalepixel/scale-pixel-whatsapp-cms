@@ -7,7 +7,7 @@ export default async function AdminNotificationsPage() {
   return (
     <>
       <PageHeader title="Notifications" />
-      <div className="p-8">
+      <div className="p-4 sm:p-8">
         <NotificationsList notifications={notifications} />
       </div>
     </>

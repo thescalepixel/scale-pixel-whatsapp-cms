@@ -48,7 +48,7 @@ export default async function AdminDashboardPage() {
         title="Dashboard"
         description="Platform-wide visibility across every supervisor's team."
       />
-      <div className="grid grid-cols-1 gap-4 p-8 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 p-4 sm:p-8 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Total supervisors" value={totalSupervisors} href="/admin/users?role=supervisor" delayMs={0} />
         <StatCard
           label="Active supervisors"

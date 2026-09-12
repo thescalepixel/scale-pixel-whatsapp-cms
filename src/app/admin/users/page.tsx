@@ -46,7 +46,7 @@ export default async function AdminUsersPage({
         }
       />
 
-      <div className="p-8">
+      <div className="p-4 sm:p-8">
         <div className="mb-4 flex gap-2">
           {ROLE_FILTERS.map((f) => (
             <Link

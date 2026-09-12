@@ -15,7 +15,7 @@ export default async function AdminReportsPage() {
         description="Employee performance and supervisor activity summaries."
         actions={<PrintButton />}
       />
-      <div className="space-y-8 p-8">
+      <div className="space-y-8 p-4 sm:p-8">
         <section>
           <h2 className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-50">Employee performance</h2>
           <div className="overflow-x-auto rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">

@@ -14,7 +14,7 @@ export default async function AdminConversationsPage({
   return (
     <>
       <PageHeader title="Conversations" description="Every conversation across every WhatsApp account." />
-      <div className="p-8">
+      <div className="p-4 sm:p-8">
         <FilterBar basePath="/admin/conversations" currentStatus={status} currentPriority={priority} currentQuery={q} />
         <ConversationList conversations={conversations} basePath="/admin/conversations" showAccount />
       </div>

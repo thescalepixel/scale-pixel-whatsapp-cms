@@ -16,7 +16,7 @@ export default async function EmployeeConversationsPage({
   return (
     <>
       <PageHeader title="My Conversations" description="Conversations assigned to you." />
-      <div className="p-8">
+      <div className="p-4 sm:p-8">
         <FilterBar basePath="/employee/conversations" currentStatus={status} currentPriority={priority} currentQuery={q} />
         <ConversationList conversations={conversations} basePath="/employee/conversations" />
       </div>

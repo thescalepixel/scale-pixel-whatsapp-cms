@@ -13,7 +13,7 @@ export default async function EmployeeQueuePage() {
         title="Unassigned Queue"
         description="Conversations on your WhatsApp accounts waiting to be claimed."
       />
-      <div className="p-8">
+      <div className="p-4 sm:p-8">
         <ConversationList conversations={conversations} basePath="/employee/queue" />
       </div>
     </>

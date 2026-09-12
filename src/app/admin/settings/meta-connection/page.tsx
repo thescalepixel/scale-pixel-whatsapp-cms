@@ -21,7 +21,7 @@ export default async function MetaConnectionPage() {
         title="Meta Connection"
         description="Authorize your agency's Meta Business Manager once, then discover every WhatsApp number it can see."
       />
-      <div className="max-w-3xl space-y-6 p-8">
+      <div className="max-w-3xl space-y-6 p-4 sm:p-8">
         <section className="rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
           <h2 className="mb-1 text-sm font-semibold text-zinc-900 dark:text-zinc-50">Business connection</h2>
           <p className="mb-4 text-sm text-zinc-500 dark:text-zinc-400">

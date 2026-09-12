@@ -20,7 +20,7 @@ export default async function SupervisorDashboardPage() {
   return (
     <>
       <PageHeader title="Dashboard" description="Your team and WhatsApp accounts." />
-      <div className="grid grid-cols-1 gap-4 p-8 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 p-4 sm:p-8 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Team members" value={teamSize ?? 0} href="/supervisor/team" delayMs={0} />
         <StatCard
           label="Online employees"

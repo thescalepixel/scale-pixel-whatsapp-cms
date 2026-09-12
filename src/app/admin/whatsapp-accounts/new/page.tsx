@@ -18,7 +18,7 @@ export default async function NewWhatsAppAccountPage() {
         title="Connect a WhatsApp account"
         description="Register a WhatsApp Business account under a supervisor."
       />
-      <div className="max-w-2xl space-y-4 p-8">
+      <div className="max-w-2xl space-y-4 p-4 sm:p-8">
         <p className="text-sm text-zinc-500 dark:text-zinc-400">
           Managing several numbers?{" "}
           <Link href="/admin/settings/meta-connection" className="font-medium text-brand-600 hover:underline">

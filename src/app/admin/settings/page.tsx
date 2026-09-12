@@ -28,7 +28,7 @@ export default async function AdminSettingsPage() {
   return (
     <>
       <PageHeader title="Settings" description="Response times, automatic assignment, and tags." />
-      <div className="max-w-3xl space-y-8 p-8">
+      <div className="max-w-3xl space-y-8 p-4 sm:p-8">
         <section className="rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
           <div className="flex items-start justify-between gap-4">
             <div>

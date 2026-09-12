@@ -6,7 +6,7 @@ export default async function ProfilePage() {
   return (
     <>
       <PageHeader title="Profile" />
-      <div className="max-w-md p-8">
+      <div className="max-w-md p-4 sm:p-8">
         <div className="rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
           <dl className="space-y-3 text-sm">
             <div>
