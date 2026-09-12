@@ -18,8 +18,8 @@ declare global {
 type Props = { accountId: string; wabaId: string; phoneNumberId: string };
 
 type Status =
+  | { state: "loading_sdk" }
   | { state: "idle" }
-  | { state: "waiting" }
   | { state: "verifying" }
   | { state: "done"; isOnBizApp: boolean }
   | { state: "error"; message: string };
@@ -37,10 +37,41 @@ const CONFIG_ID = process.env.NEXT_PUBLIC_META_WA_CONFIG_ID;
  * (re-subscribe, verify, sync) happen server-side in
  * completeCoexistenceSignupAction — this component only drives the popup
  * and reports its outcome.
+ *
+ * The Facebook SDK is loaded eagerly on mount (not inside the click
+ * handler): FB.login() opens a real popup window, and every major browser
+ * only allows that without being blocked when it's called synchronously
+ * inside a genuine click event. Deferring the SDK load until the click,
+ * then calling FB.login() from an async callback once the script finishes
+ * loading, breaks that chain — the browser sees an unrequested popup
+ * appearing "out of nowhere" a moment after the click and silently blocks
+ * it (no error, nothing happens). Pre-loading means the click handler can
+ * call FB.login() immediately and synchronously.
  */
 export function CoexistenceConnectButton({ accountId, wabaId, phoneNumberId }: Props) {
-  const [status, setStatus] = useState<Status>({ state: "idle" });
+  // Starts as "loading_sdk" unconditionally — `window` isn't available
+  // during Next.js's server render pass of this client component, so the
+  // real check happens in the effect below instead of an initializer here.
+  const [status, setStatus] = useState<Status>({ state: "loading_sdk" });
   const sdkInjected = useRef(false);
+
+  useEffect(() => {
+    if (window.FB) {
+      setStatus({ state: "idle" });
+      return;
+    }
+    if (sdkInjected.current) return;
+    sdkInjected.current = true;
+    window.fbAsyncInit = () => {
+      window.FB!.init({ appId: APP_ID, autoLogAppEvents: true, xfbml: true, version: "v21.0" });
+      setStatus({ state: "idle" });
+    };
+    const script = document.createElement("script");
+    script.src = "https://connect.facebook.net/en_US/sdk.js";
+    script.async = true;
+    script.defer = true;
+    document.body.appendChild(script);
+  }, []);
 
   useEffect(() => {
     function handleMessage(event: MessageEvent) {
@@ -68,59 +99,43 @@ export function CoexistenceConnectButton({ accountId, wabaId, phoneNumberId }: P
     return () => window.removeEventListener("message", handleMessage);
   }, [accountId, wabaId, phoneNumberId]);
 
-  function ensureSdkLoaded(onReady: () => void) {
-    if (window.FB) {
-      onReady();
-      return;
-    }
-    if (sdkInjected.current) {
-      const interval = setInterval(() => {
-        if (window.FB) {
-          clearInterval(interval);
-          onReady();
-        }
-      }, 200);
-      setTimeout(() => clearInterval(interval), 10000);
-      return;
-    }
-    sdkInjected.current = true;
-    window.fbAsyncInit = () => {
-      window.FB!.init({ appId: APP_ID, autoLogAppEvents: true, xfbml: true, version: "v21.0" });
-      onReady();
-    };
-    const script = document.createElement("script");
-    script.src = "https://connect.facebook.net/en_US/sdk.js";
-    script.async = true;
-    script.defer = true;
-    document.body.appendChild(script);
-  }
-
   function launch() {
     if (!APP_ID || !CONFIG_ID) {
       setStatus({ state: "error", message: "Meta app isn't configured for this yet (missing app/config ID)." });
       return;
     }
-    setStatus({ state: "waiting" });
-    ensureSdkLoaded(() => {
-      window.FB!.login(() => {}, {
-        config_id: CONFIG_ID,
-        response_type: "code",
-        override_default_response_type: true,
-        extras: { setup: {}, featureType: "whatsapp_business_app_onboarding" },
-      });
+    if (!window.FB) {
+      setStatus({ state: "error", message: "Still loading Facebook's connector — wait a second and try again." });
+      return;
+    }
+    // Must be called synchronously, right here in the click handler, or the
+    // popup gets silently blocked — see the note above.
+    window.FB.login(() => {}, {
+      config_id: CONFIG_ID,
+      response_type: "code",
+      override_default_response_type: true,
+      extras: { setup: {}, featureType: "whatsapp_business_app_onboarding" },
     });
   }
+
+  const busy = status.state === "loading_sdk" || status.state === "verifying";
 
   return (
     <div className="space-y-2">
       <button
         type="button"
         onClick={launch}
-        disabled={status.state === "waiting" || status.state === "verifying"}
+        disabled={busy}
         className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-60"
       >
-        {status.state === "waiting" ? "Waiting for Facebook…" : status.state === "verifying" ? "Confirming pairing…" : "Connect WhatsApp Business App"}
+        {status.state === "loading_sdk" ? "Loading…" : status.state === "verifying" ? "Confirming pairing…" : "Connect WhatsApp Business App"}
       </button>
+      {status.state === "idle" && (
+        <p className="text-xs text-zinc-400">
+          A popup blocked with no error message on screen? Some browsers block it silently — check the address bar for a
+          blocked-popup icon, allow popups for this site, and click again.
+        </p>
+      )}
       {status.state === "done" && (
         <p className="text-sm text-emerald-600">
           Paired{status.isOnBizApp ? " — confirmed the number is still linked to the WhatsApp Business App." : "."} Have the
