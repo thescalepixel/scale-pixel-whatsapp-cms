@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useTransition } from "react";
-import { setUserStatusAction, resetUserPasswordAction, changeUserRoleAction } from "./actions";
+import { setUserStatusAction, resetUserPasswordAction, changeUserRoleAction, deleteUserAction } from "./actions";
 import type { Enums } from "@/lib/supabase/database.types";
 
 const ROLES: Enums<"user_role">[] = ["admin", "supervisor", "employee"];
@@ -20,8 +20,10 @@ export function UserRowActions({
 }) {
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [changingRole, setChangingRole] = useState(false);
   const [newRole, setNewRole] = useState<Enums<"user_role">>(role);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   function setStatus(next: Enums<"user_status">) {
     startTransition(async () => {
@@ -49,6 +51,32 @@ export function UserRowActions({
       await changeUserRoleAction({ error: null }, formData);
       setChangingRole(false);
     });
+  }
+
+  function confirmDelete() {
+    startTransition(async () => {
+      const res = await deleteUserAction(userId);
+      setConfirmingDelete(false);
+      if (res.error) {
+        setError(res.error);
+        setTimeout(() => setError(null), 6000);
+      }
+      // On success the row disappears via revalidatePath — nothing else to do.
+    });
+  }
+
+  if (confirmingDelete) {
+    return (
+      <div className="flex flex-wrap items-center gap-2 text-xs">
+        <span className="text-red-600 dark:text-red-400">Permanently delete this account?</span>
+        <ActionButton onClick={confirmDelete} disabled={pending} tone="danger">
+          Confirm delete
+        </ActionButton>
+        <ActionButton onClick={() => setConfirmingDelete(false)} disabled={pending}>
+          Cancel
+        </ActionButton>
+      </div>
+    );
   }
 
   if (changingRole) {
@@ -101,6 +129,9 @@ export function UserRowActions({
       <ActionButton onClick={() => setChangingRole(true)} disabled={pending}>
         Change role
       </ActionButton>
+      <ActionButton onClick={() => setConfirmingDelete(true)} disabled={pending} tone="danger">
+        Delete
+      </ActionButton>
       <Link
         href={`/admin/audit-logs?user=${userId}`}
         className="rounded-md border border-zinc-200 px-2 py-1 font-medium text-zinc-600 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800"
@@ -114,6 +145,7 @@ export function UserRowActions({
         Permissions
       </Link>
       {message && <span className="text-emerald-600 dark:text-emerald-400">{message}</span>}
+      {error && <span className="text-red-600 dark:text-red-400">{error}</span>}
     </div>
   );
 }
@@ -126,7 +158,7 @@ function ActionButton({
 }: {
   onClick: () => void;
   disabled?: boolean;
-  tone?: "default" | "success";
+  tone?: "default" | "success" | "danger";
   children: React.ReactNode;
 }) {
   return (
@@ -136,7 +168,9 @@ function ActionButton({
       className={`rounded-md border px-2 py-1 font-medium disabled:opacity-50 ${
         tone === "success"
           ? "border-emerald-200 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-900 dark:text-emerald-400 dark:hover:bg-emerald-950"
-          : "border-zinc-200 text-zinc-600 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800"
+          : tone === "danger"
+            ? "border-red-200 text-red-700 hover:bg-red-50 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950"
+            : "border-zinc-200 text-zinc-600 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800"
       }`}
     >
       {children}

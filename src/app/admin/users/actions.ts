@@ -157,3 +157,43 @@ export async function resetUserPasswordAction(userId: string, email: string) {
     resourceId: userId,
   });
 }
+
+export type DeleteResult = { error: string | null };
+
+/**
+ * Permanently deletes a user account (the auth identity and, via its
+ * ON DELETE CASCADE foreign key, the matching public.users profile row).
+ * Uses the Admin API (service role) since a regular session can never
+ * delete another auth.users row. whatsapp_accounts.supervisor_id is the
+ * one ON DELETE RESTRICT in the schema — deleting a supervisor who still
+ * owns WhatsApp accounts is deliberately blocked until they're reassigned,
+ * surfaced here as a clean error instead of a raw database failure.
+ */
+export async function deleteUserAction(userId: string): Promise<DeleteResult> {
+  const me = await requireUser(["admin"]);
+  if (userId === me.id) {
+    return { error: "You can't delete your own account." };
+  }
+
+  const admin = createAdminClient();
+  const { data: target } = await admin.from("users").select("full_name, email, role").eq("id", userId).single();
+
+  const { error } = await admin.auth.admin.deleteUser(userId);
+  if (error) {
+    return {
+      error: error.message.includes("foreign key")
+        ? "Can't delete — this supervisor still owns WhatsApp accounts. Reassign those accounts to someone else first."
+        : "Couldn't delete the account. Try again.",
+    };
+  }
+
+  await writeAudit({
+    action: "user.delete",
+    resourceType: "user",
+    resourceId: userId,
+    previousValue: target,
+  });
+
+  revalidatePath("/admin/users");
+  return { error: null };
+}
