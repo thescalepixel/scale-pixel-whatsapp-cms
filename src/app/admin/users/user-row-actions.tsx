@@ -85,7 +85,7 @@ export function UserRowActions({
         <select
           value={newRole}
           onChange={(e) => setNewRole(e.target.value as Enums<"user_role">)}
-          className="rounded-md border border-zinc-300 px-2 py-1 text-xs outline-none focus:border-emerald-500 dark:border-zinc-700 dark:bg-zinc-950"
+          className="rounded-md border border-zinc-300 px-2 py-1 text-xs outline-none focus:border-brand-500 dark:border-zinc-700 dark:bg-zinc-950"
         >
           {ROLES.map((r) => (
             <option key={r} value={r}>
@@ -144,7 +144,7 @@ export function UserRowActions({
       >
         Permissions
       </Link>
-      {message && <span className="text-emerald-600 dark:text-emerald-400">{message}</span>}
+      {message && <span className="text-brand-600 dark:text-brand-400">{message}</span>}
       {error && <span className="text-red-600 dark:text-red-400">{error}</span>}
     </div>
   );
@@ -167,7 +167,7 @@ function ActionButton({
       disabled={disabled}
       className={`rounded-md border px-2 py-1 font-medium disabled:opacity-50 ${
         tone === "success"
-          ? "border-emerald-200 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-900 dark:text-emerald-400 dark:hover:bg-emerald-950"
+          ? "border-brand-200 text-brand-700 hover:bg-brand-50 dark:border-brand-900 dark:text-brand-400 dark:hover:bg-brand-950"
           : tone === "danger"
             ? "border-red-200 text-red-700 hover:bg-red-50 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950"
             : "border-zinc-200 text-zinc-600 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800"

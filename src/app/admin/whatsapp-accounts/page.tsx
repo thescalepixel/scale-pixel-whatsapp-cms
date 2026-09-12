@@ -25,7 +25,7 @@ export default async function AdminWhatsAppAccountsPage() {
             </Link>
             <Link
               href="/admin/whatsapp-accounts/new"
-              className="rounded-md bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700"
+              className="rounded-md bg-brand-600 px-3 py-2 text-sm font-medium text-white hover:bg-brand-700"
             >
               Connect account
             </Link>
@@ -75,7 +75,7 @@ export default async function AdminWhatsAppAccountsPage() {
                 <tr>
                   <td colSpan={4} className="px-4 py-10 text-center text-zinc-500 dark:text-zinc-400">
                     No WhatsApp accounts yet.{" "}
-                    <Link href="/admin/whatsapp-accounts/new" className="font-medium text-emerald-600 hover:underline">
+                    <Link href="/admin/whatsapp-accounts/new" className="font-medium text-brand-600 hover:underline">
                       Connect the first one
                     </Link>
                     .

@@ -42,7 +42,7 @@ export function TagsManager({ tags }: { tags: { id: string; name: string; color:
             name="name"
             required
             placeholder="e.g. Hot Lead"
-            className="mt-1 rounded-md border border-zinc-300 px-3 py-1.5 text-sm outline-none focus:border-emerald-500 dark:border-zinc-700 dark:bg-zinc-950"
+            className="mt-1 rounded-md border border-zinc-300 px-3 py-1.5 text-sm outline-none focus:border-brand-500 dark:border-zinc-700 dark:bg-zinc-950"
           />
         </div>
         <div>

@@ -45,7 +45,7 @@ export default async function MetaConnectionPage() {
 
         <p className="text-sm text-zinc-500 dark:text-zinc-400">
           Prefer to type in one account by hand instead?{" "}
-          <Link href="/admin/whatsapp-accounts/new" className="font-medium text-emerald-600 hover:underline">
+          <Link href="/admin/whatsapp-accounts/new" className="font-medium text-brand-600 hover:underline">
             Use the manual form
           </Link>
           .

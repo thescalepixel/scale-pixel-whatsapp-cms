@@ -18,7 +18,7 @@ export function NewUserForm({
   if (state.success) {
     return (
       <div className="space-y-4">
-        <div className="rounded-md bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+        <div className="rounded-md bg-brand-50 px-4 py-3 text-sm text-brand-800 dark:bg-brand-950 dark:text-brand-300">
           Account created. Share these sign-in details with them yourself (WhatsApp, in person,
           however works) — they can go to{" "}
           <span className="font-medium">{typeof window !== "undefined" ? window.location.origin : ""}/login</span>{" "}
@@ -37,7 +37,7 @@ export function NewUserForm({
         <div className="flex gap-3">
           <Link
             href="/admin/users"
-            className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
+            className="rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"
           >
             Back to Users
           </Link>
@@ -67,7 +67,7 @@ export function NewUserForm({
             name="role"
             value={role}
             onChange={(e) => setRole(e.target.value as Enums<"user_role">)}
-            className="mt-1 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 dark:border-zinc-700 dark:bg-zinc-950"
+            className="mt-1 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-zinc-700 dark:bg-zinc-950"
           >
             <option value="employee">Employee</option>
             <option value="supervisor">Supervisor</option>
@@ -85,7 +85,7 @@ export function NewUserForm({
             id="supervisor_id"
             name="supervisor_id"
             required
-            className="mt-1 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-emerald-500 dark:border-zinc-700 dark:bg-zinc-950"
+            className="mt-1 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-brand-500 dark:border-zinc-700 dark:bg-zinc-950"
           >
             <option value="">Select a supervisor…</option>
             {supervisors.map((s) => (
@@ -123,7 +123,7 @@ export function NewUserForm({
       <button
         type="submit"
         disabled={pending}
-        className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-60"
+        className="rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-60"
       >
         {pending ? "Creating…" : "Create user"}
       </button>
@@ -158,7 +158,7 @@ function TextField({
         required={required}
         minLength={minLength}
         autoComplete={autoComplete}
-        className="mt-1 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 dark:border-zinc-700 dark:bg-zinc-950"
+        className="mt-1 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-zinc-700 dark:bg-zinc-950"
       />
     </div>
   );

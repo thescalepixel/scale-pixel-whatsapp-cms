@@ -126,7 +126,7 @@ export function CoexistenceConnectButton({ accountId, wabaId, phoneNumberId }: P
         type="button"
         onClick={launch}
         disabled={busy}
-        className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-60"
+        className="rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-60"
       >
         {status.state === "loading_sdk" ? "Loading…" : status.state === "verifying" ? "Confirming pairing…" : "Connect WhatsApp Business App"}
       </button>
@@ -137,7 +137,7 @@ export function CoexistenceConnectButton({ accountId, wabaId, phoneNumberId }: P
         </p>
       )}
       {status.state === "done" && (
-        <p className="text-sm text-emerald-600">
+        <p className="text-sm text-brand-600">
           Paired{status.isOnBizApp ? " — confirmed the number is still linked to the WhatsApp Business App." : "."} Have the
           customer send a test message to confirm it now reaches the inbox.
         </p>

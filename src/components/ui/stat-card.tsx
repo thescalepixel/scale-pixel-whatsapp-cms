@@ -17,7 +17,7 @@ export function StatCard({
     default: "text-zinc-900 dark:text-zinc-50",
     warning: "text-amber-600 dark:text-amber-400",
     danger: "text-red-600 dark:text-red-400",
-    success: "text-emerald-600 dark:text-emerald-400",
+    success: "text-brand-600 dark:text-brand-400",
   }[tone];
 
   const content = (
@@ -32,7 +32,7 @@ export function StatCard({
     return (
       <Link
         href={href}
-        className="block rounded-lg border border-zinc-200 bg-white p-4 transition-colors hover:border-emerald-300 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-emerald-800 dark:hover:bg-zinc-800/50"
+        className="block rounded-lg border border-zinc-200 bg-white p-4 transition-colors hover:border-brand-300 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-brand-800 dark:hover:bg-zinc-800/50"
       >
         {content}
       </Link>

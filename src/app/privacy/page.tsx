@@ -6,7 +6,7 @@ export default function PrivacyPolicyPage() {
   return (
     <div className="mx-auto max-w-2xl px-4 py-16 text-zinc-800 dark:text-zinc-200">
       <div className="mb-8 text-center">
-        <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-600 text-white font-semibold">
+        <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-brand-600 text-white font-semibold">
           SP
         </div>
         <h1 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">Scale Pixel</h1>
@@ -68,7 +68,7 @@ export default function PrivacyPolicyPage() {
           <h2 className="mb-2 font-semibold text-zinc-900 dark:text-zinc-50">Contact</h2>
           <p>
             Questions about this policy or your data can be sent to{" "}
-            <a className="text-emerald-600 hover:underline" href="mailto:thescalepixel@gmail.com">
+            <a className="text-brand-600 hover:underline" href="mailto:thescalepixel@gmail.com">
               thescalepixel@gmail.com
             </a>
             .

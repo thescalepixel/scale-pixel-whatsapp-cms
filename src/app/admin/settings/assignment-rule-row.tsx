@@ -38,7 +38,7 @@ export function AssignmentRuleRow({
           formData.set("strategy", e.target.value);
           startTransition(() => setAssignmentRuleAction(formData));
         }}
-        className="rounded-md border border-zinc-300 px-2 py-1.5 text-sm outline-none focus:border-emerald-500 disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-950"
+        className="rounded-md border border-zinc-300 px-2 py-1.5 text-sm outline-none focus:border-brand-500 disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-950"
       >
         {OPTIONS.map((o) => (
           <option key={o.value} value={o.value}>

@@ -10,6 +10,22 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Brand palette — a richer, more saturated jade-green than stock Tailwind
+     emerald. Used everywhere `brand-*` utilities appear (primary actions,
+     the logo mark, active nav state, "success"/"connected" tones). Swap
+     these stops to re-theme the whole app from one place. */
+  --color-brand-50: #effdf6;
+  --color-brand-100: #d6f9e8;
+  --color-brand-200: #adf1d2;
+  --color-brand-300: #74e3b6;
+  --color-brand-400: #3ecd9a;
+  --color-brand-500: #17b381;
+  --color-brand-600: #0a9470;
+  --color-brand-700: #087a5c;
+  --color-brand-800: #0a614a;
+  --color-brand-900: #0a503e;
+  --color-brand-950: #042e24;
 }
 
 @media (prefers-color-scheme: dark) {

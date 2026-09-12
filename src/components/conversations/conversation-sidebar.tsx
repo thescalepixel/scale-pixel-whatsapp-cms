@@ -50,7 +50,7 @@ export function ConversationSidebar({
           onChange={(e) =>
             startTransition(() => updateStatusAction(conversationId, e.target.value as Enums<"conversation_status">))
           }
-          className="mt-1 w-full rounded-md border border-zinc-300 px-2 py-1.5 text-sm capitalize outline-none focus:border-emerald-500 disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-950"
+          className="mt-1 w-full rounded-md border border-zinc-300 px-2 py-1.5 text-sm capitalize outline-none focus:border-brand-500 disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-950"
         >
           {["new", "open", "pending", "resolved"].map((s) => (
             <option key={s} value={s}>
@@ -70,7 +70,7 @@ export function ConversationSidebar({
           onChange={(e) =>
             startTransition(() => updatePriorityAction(conversationId, e.target.value as Enums<"conversation_priority">))
           }
-          className="mt-1 w-full rounded-md border border-zinc-300 px-2 py-1.5 text-sm capitalize outline-none focus:border-emerald-500 disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-950"
+          className="mt-1 w-full rounded-md border border-zinc-300 px-2 py-1.5 text-sm capitalize outline-none focus:border-brand-500 disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-950"
         >
           {["low", "normal", "high", "urgent"].map((p) => (
             <option key={p} value={p}>
@@ -91,7 +91,7 @@ export function ConversationSidebar({
             onChange={(e) =>
               startTransition(() => assignConversationAction(conversationId, e.target.value || null))
             }
-            className="mt-1 w-full rounded-md border border-zinc-300 px-2 py-1.5 text-sm outline-none focus:border-emerald-500 disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-950"
+            className="mt-1 w-full rounded-md border border-zinc-300 px-2 py-1.5 text-sm outline-none focus:border-brand-500 disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-950"
           >
             <option value="">Unassigned</option>
             {assignableEmployees.map((e) => (

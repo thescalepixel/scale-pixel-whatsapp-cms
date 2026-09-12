@@ -34,7 +34,7 @@ export function NotificationsList({ notifications }: { notifications: Notificati
           <button
             disabled={pending}
             onClick={() => startTransition(() => markAllNotificationsReadAction())}
-            className="text-xs font-medium text-emerald-600 hover:underline disabled:opacity-60"
+            className="text-xs font-medium text-brand-600 hover:underline disabled:opacity-60"
           >
             Mark all as read
           </button>
@@ -44,8 +44,8 @@ export function NotificationsList({ notifications }: { notifications: Notificati
         {notifications.map((n) => {
           const link = (n.payload as { link_path?: string })?.link_path;
           const content = (
-            <div className={`flex items-start gap-3 px-4 py-3 ${!n.read_at ? "bg-emerald-50/50 dark:bg-emerald-950/20" : ""}`}>
-              {!n.read_at && <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-emerald-600" />}
+            <div className={`flex items-start gap-3 px-4 py-3 ${!n.read_at ? "bg-brand-50/50 dark:bg-brand-950/20" : ""}`}>
+              {!n.read_at && <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-brand-600" />}
               <div className={`flex-1 ${n.read_at ? "pl-5" : ""}`}>
                 <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50">{n.title}</p>
                 {n.body && <p className="mt-0.5 text-sm text-zinc-600 dark:text-zinc-400">{n.body}</p>}

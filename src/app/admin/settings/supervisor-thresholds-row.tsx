@@ -36,7 +36,7 @@ export function SupervisorThresholdsRow({
           type="number"
           min={1}
           defaultValue={warningMinutes}
-          className="w-20 rounded-md border border-zinc-300 px-2 py-1 text-sm outline-none focus:border-emerald-500 dark:border-zinc-700 dark:bg-zinc-950"
+          className="w-20 rounded-md border border-zinc-300 px-2 py-1 text-sm outline-none focus:border-brand-500 dark:border-zinc-700 dark:bg-zinc-950"
         />
       </div>
       <div>
@@ -46,7 +46,7 @@ export function SupervisorThresholdsRow({
           type="number"
           min={1}
           defaultValue={targetMinutes}
-          className="w-20 rounded-md border border-zinc-300 px-2 py-1 text-sm outline-none focus:border-emerald-500 dark:border-zinc-700 dark:bg-zinc-950"
+          className="w-20 rounded-md border border-zinc-300 px-2 py-1 text-sm outline-none focus:border-brand-500 dark:border-zinc-700 dark:bg-zinc-950"
         />
       </div>
       <button

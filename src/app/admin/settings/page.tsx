@@ -41,7 +41,7 @@ export default async function AdminSettingsPage() {
             </div>
             <Link
               href="/admin/settings/meta-connection"
-              className="shrink-0 rounded-md bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700"
+              className="shrink-0 rounded-md bg-brand-600 px-3 py-2 text-sm font-medium text-white hover:bg-brand-700"
             >
               {metaStatus ? "Manage" : "Connect"}
             </Link>

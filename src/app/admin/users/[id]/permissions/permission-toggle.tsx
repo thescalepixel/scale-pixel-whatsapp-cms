@@ -23,7 +23,7 @@ export function PermissionToggle({
       onChange={(e) =>
         startTransition(() => setPermissionOverrideAction(userId, permissionId, e.target.value as Mode))
       }
-      className="rounded-md border border-zinc-300 px-2 py-1 text-xs outline-none focus:border-emerald-500 disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-950"
+      className="rounded-md border border-zinc-300 px-2 py-1 text-xs outline-none focus:border-brand-500 disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-950"
     >
       <option value="default">Use role default</option>
       <option value="granted">Granted</option>

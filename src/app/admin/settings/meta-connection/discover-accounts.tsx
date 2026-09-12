@@ -46,7 +46,7 @@ export function DiscoverAccounts({ supervisors }: { supervisors: { id: string; f
       <button
         onClick={runDiscover}
         disabled={pending}
-        className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-60"
+        className="rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-60"
       >
         {pending ? "Asking Meta…" : "Discover accounts"}
       </button>
@@ -109,7 +109,7 @@ function DiscoveredRow({
       </div>
 
       {number.alreadyConnected || state.success ? (
-        <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">
+        <span className="rounded-full bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-700 dark:bg-brand-950 dark:text-brand-400">
           Connected
         </span>
       ) : (
@@ -121,7 +121,7 @@ function DiscoveredRow({
           <select
             name="supervisor_id"
             required
-            className="rounded-md border border-zinc-300 px-2 py-1.5 text-xs outline-none focus:border-emerald-500 dark:border-zinc-700 dark:bg-zinc-950"
+            className="rounded-md border border-zinc-300 px-2 py-1.5 text-xs outline-none focus:border-brand-500 dark:border-zinc-700 dark:bg-zinc-950"
           >
             <option value="">Assign to supervisor…</option>
             {supervisors.map((s) => (
@@ -133,7 +133,7 @@ function DiscoveredRow({
           <button
             type="submit"
             disabled={pending}
-            className="rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700 disabled:opacity-60"
+            className="rounded-md bg-brand-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-700 disabled:opacity-60"
           >
             {pending ? "Adding…" : "Add"}
           </button>

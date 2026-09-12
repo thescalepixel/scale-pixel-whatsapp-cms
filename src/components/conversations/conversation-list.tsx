@@ -81,7 +81,7 @@ export async function ConversationList({
                     {c.customer?.name || "Unknown"}
                   </span>
                   {c.unread_count > 0 && (
-                    <span className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-emerald-600 px-1.5 text-xs font-semibold text-white">
+                    <span className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-600 px-1.5 text-xs font-semibold text-white">
                       {c.unread_count}
                     </span>
                   )}

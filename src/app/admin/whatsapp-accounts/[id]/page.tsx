@@ -113,7 +113,7 @@ export default async function WhatsAppAccountDetailPage({ params }: { params: Pr
               <select
                 name="employee_id"
                 required
-                className="flex-1 rounded-md border border-zinc-300 px-2 py-1.5 text-sm outline-none focus:border-emerald-500 dark:border-zinc-700 dark:bg-zinc-950"
+                className="flex-1 rounded-md border border-zinc-300 px-2 py-1.5 text-sm outline-none focus:border-brand-500 dark:border-zinc-700 dark:bg-zinc-950"
               >
                 <option value="">Select…</option>
                 {available.map((e) => (

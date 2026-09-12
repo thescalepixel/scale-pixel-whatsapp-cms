@@ -21,7 +21,7 @@ export default async function NewWhatsAppAccountPage() {
       <div className="max-w-2xl space-y-4 p-8">
         <p className="text-sm text-zinc-500 dark:text-zinc-400">
           Managing several numbers?{" "}
-          <Link href="/admin/settings/meta-connection" className="font-medium text-emerald-600 hover:underline">
+          <Link href="/admin/settings/meta-connection" className="font-medium text-brand-600 hover:underline">
             Connect once and auto-discover every number
           </Link>{" "}
           instead of typing each one in below.

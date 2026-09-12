@@ -14,12 +14,12 @@ export function MessageThread({ messages }: { messages: MessageRow[] }) {
             <div
               className={`max-w-[75%] rounded-2xl px-4 py-2 text-sm ${
                 isOut
-                  ? "rounded-br-sm bg-emerald-600 text-white"
+                  ? "rounded-br-sm bg-brand-600 text-white"
                   : "rounded-bl-sm bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-50"
               }`}
             >
               <p className="whitespace-pre-wrap">{m.body}</p>
-              <p className={`mt-1 text-[10px] ${isOut ? "text-emerald-100" : "text-zinc-400"}`}>
+              <p className={`mt-1 text-[10px] ${isOut ? "text-brand-100" : "text-zinc-400"}`}>
                 {new Date(m.created_at).toLocaleString()}
                 {isOut && ` · ${m.status}`}
               </p>
