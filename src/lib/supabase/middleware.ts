@@ -21,8 +21,12 @@ const ROLE_PREFIX: Record<string, string> = {
 const PUBLIC_PATHS = ["/login", "/forgot-password", "/auth", "/api/webhooks"];
 // Reachable whether or not the caller has a session — a password-recovery
 // link signs the user in just enough to call updateUser(), and an
-// authenticated visit here must NOT bounce to their dashboard.
-const ALWAYS_ALLOWED_PATHS = ["/reset-password"];
+// authenticated visit here must NOT bounce to their dashboard. /privacy is
+// here for the same "no bounce either way" reason: Meta's App Review fetches
+// it logged out, and it must also stay visitable by a signed-in user without
+// getting redirected to their dashboard (unlike PUBLIC_PATHS, which does
+// that on purpose for /login etc.).
+const ALWAYS_ALLOWED_PATHS = ["/reset-password", "/privacy"];
 
 /**
  * Refreshes the Supabase session on every request and gates each role's
