@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
 
       const { data: account } = await admin
         .from("whatsapp_accounts")
-        .select("id, client_id, status")
+        .select("id, status")
         .eq("phone_number_id", phoneNumberId)
         .single();
       if (!account || account.status !== "connected") continue;
@@ -73,12 +73,12 @@ export async function POST(request: NextRequest) {
           .from("customers")
           .upsert(
             {
-              client_id: account.client_id,
+              whatsapp_account_id: account.id,
               whatsapp_number: msg.from,
               name: contactName,
               last_conversation_at: new Date().toISOString(),
             },
-            { onConflict: "client_id,whatsapp_number", ignoreDuplicates: false },
+            { onConflict: "whatsapp_account_id,whatsapp_number", ignoreDuplicates: false },
           )
           .select("id, first_conversation_at")
           .single();
@@ -91,7 +91,6 @@ export async function POST(request: NextRequest) {
         let { data: conversation } = await admin
           .from("conversations")
           .select("id")
-          .eq("client_id", account.client_id)
           .eq("whatsapp_account_id", account.id)
           .eq("customer_id", customer.id)
           .neq("status", "resolved")
@@ -102,7 +101,7 @@ export async function POST(request: NextRequest) {
         if (!conversation) {
           const { data: newConv } = await admin
             .from("conversations")
-            .insert({ client_id: account.client_id, whatsapp_account_id: account.id, customer_id: customer.id, status: "new" })
+            .insert({ whatsapp_account_id: account.id, customer_id: customer.id, status: "new" })
             .select("id")
             .single();
           conversation = newConv;

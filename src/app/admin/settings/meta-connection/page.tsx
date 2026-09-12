@@ -8,11 +8,12 @@ import { DiscoverAccounts } from "./discover-accounts";
 export default async function MetaConnectionPage() {
   const status = await getMetaConnectionStatus();
   const supabase = await createClient();
-  const { data: clients } = await supabase
-    .from("clients")
-    .select("id, company_name")
+  const { data: supervisors } = await supabase
+    .from("users")
+    .select("id, full_name")
+    .eq("role", "supervisor")
     .eq("status", "active")
-    .order("company_name");
+    .order("full_name");
 
   return (
     <>
@@ -35,10 +36,10 @@ export default async function MetaConnectionPage() {
           <section className="rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
             <h2 className="mb-1 text-sm font-semibold text-zinc-900 dark:text-zinc-50">Discover accounts</h2>
             <p className="mb-4 text-sm text-zinc-500 dark:text-zinc-400">
-              Lists every WhatsApp Business Account and phone number this connection can see. Pick a client for any
-              number you want to add — already-connected numbers are marked and skipped.
+              Lists every WhatsApp Business Account and phone number this connection can see. Pick a supervisor for
+              any number you want to add — already-connected numbers are marked and skipped.
             </p>
-            <DiscoverAccounts clients={clients ?? []} />
+            <DiscoverAccounts supervisors={supervisors ?? []} />
           </section>
         )}
 

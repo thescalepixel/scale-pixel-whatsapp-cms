@@ -16,38 +16,38 @@ export type Database = {
     Tables: {
       assignment_rules: {
         Row: {
-          client_id: string | null
           config: Json
           created_at: string
           enabled: boolean
           id: string
           strategy: Database["public"]["Enums"]["assignment_strategy"]
+          supervisor_id: string | null
           updated_at: string
         }
         Insert: {
-          client_id?: string | null
           config?: Json
           created_at?: string
           enabled?: boolean
           id?: string
           strategy: Database["public"]["Enums"]["assignment_strategy"]
+          supervisor_id?: string | null
           updated_at?: string
         }
         Update: {
-          client_id?: string | null
           config?: Json
           created_at?: string
           enabled?: boolean
           id?: string
           strategy?: Database["public"]["Enums"]["assignment_strategy"]
+          supervisor_id?: string | null
           updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "assignment_rules_client_id_fkey"
-            columns: ["client_id"]
+            foreignKeyName: "assignment_rules_supervisor_id_fkey"
+            columns: ["supervisor_id"]
             isOneToOne: false
-            referencedRelation: "clients"
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -55,7 +55,6 @@ export type Database = {
       audit_logs: {
         Row: {
           action: string
-          client_id: string | null
           created_at: string
           id: string
           ip_address: unknown
@@ -63,12 +62,11 @@ export type Database = {
           previous_value: Json | null
           resource_id: string | null
           resource_type: string
-          role: Database["public"]["Enums"]["user_role"] | null
+          role: string | null
           user_id: string | null
         }
         Insert: {
           action: string
-          client_id?: string | null
           created_at?: string
           id?: string
           ip_address?: unknown
@@ -76,12 +74,11 @@ export type Database = {
           previous_value?: Json | null
           resource_id?: string | null
           resource_type: string
-          role?: Database["public"]["Enums"]["user_role"] | null
+          role?: string | null
           user_id?: string | null
         }
         Update: {
           action?: string
-          client_id?: string | null
           created_at?: string
           id?: string
           ip_address?: unknown
@@ -89,17 +86,10 @@ export type Database = {
           previous_value?: Json | null
           resource_id?: string | null
           resource_type?: string
-          role?: Database["public"]["Enums"]["user_role"] | null
+          role?: string | null
           user_id?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "audit_logs_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: false
-            referencedRelation: "clients"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "audit_logs_user_id_fkey"
             columns: ["user_id"]
@@ -108,84 +98,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      client_users: {
-        Row: {
-          client_id: string
-          created_at: string
-          permission_level: Database["public"]["Enums"]["client_permission_level"]
-          user_id: string
-        }
-        Insert: {
-          client_id: string
-          created_at?: string
-          permission_level?: Database["public"]["Enums"]["client_permission_level"]
-          user_id: string
-        }
-        Update: {
-          client_id?: string
-          created_at?: string
-          permission_level?: Database["public"]["Enums"]["client_permission_level"]
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "client_users_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: false
-            referencedRelation: "clients"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "client_users_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      clients: {
-        Row: {
-          company_name: string
-          contact_person: string
-          created_at: string
-          email: string | null
-          id: string
-          last_activity_at: string | null
-          notes: string
-          phone: string | null
-          status: Database["public"]["Enums"]["client_status"]
-          subscription_status: string
-          updated_at: string
-        }
-        Insert: {
-          company_name: string
-          contact_person?: string
-          created_at?: string
-          email?: string | null
-          id?: string
-          last_activity_at?: string | null
-          notes?: string
-          phone?: string | null
-          status?: Database["public"]["Enums"]["client_status"]
-          subscription_status?: string
-          updated_at?: string
-        }
-        Update: {
-          company_name?: string
-          contact_person?: string
-          created_at?: string
-          email?: string | null
-          id?: string
-          last_activity_at?: string | null
-          notes?: string
-          phone?: string | null
-          status?: Database["public"]["Enums"]["client_status"]
-          subscription_status?: string
-          updated_at?: string
-        }
-        Relationships: []
       }
       conversation_tags: {
         Row: {
@@ -225,7 +137,6 @@ export type Database = {
           assigned_employee_id: string | null
           assigned_supervisor_id: string | null
           awaiting_response: boolean
-          client_id: string
           created_at: string
           customer_id: string
           first_response_at: string | null
@@ -242,7 +153,6 @@ export type Database = {
           assigned_employee_id?: string | null
           assigned_supervisor_id?: string | null
           awaiting_response?: boolean
-          client_id: string
           created_at?: string
           customer_id: string
           first_response_at?: string | null
@@ -259,7 +169,6 @@ export type Database = {
           assigned_employee_id?: string | null
           assigned_supervisor_id?: string | null
           awaiting_response?: boolean
-          client_id?: string
           created_at?: string
           customer_id?: string
           first_response_at?: string | null
@@ -288,13 +197,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "conversations_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: false
-            referencedRelation: "clients"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "conversations_customer_id_fkey"
             columns: ["customer_id"]
             isOneToOne: false
@@ -312,7 +214,6 @@ export type Database = {
       }
       customers: {
         Row: {
-          client_id: string
           created_at: string
           first_conversation_at: string | null
           id: string
@@ -320,10 +221,10 @@ export type Database = {
           name: string
           profile_meta: Json
           updated_at: string
+          whatsapp_account_id: string
           whatsapp_number: string
         }
         Insert: {
-          client_id: string
           created_at?: string
           first_conversation_at?: string | null
           id?: string
@@ -331,10 +232,10 @@ export type Database = {
           name?: string
           profile_meta?: Json
           updated_at?: string
+          whatsapp_account_id: string
           whatsapp_number: string
         }
         Update: {
-          client_id?: string
           created_at?: string
           first_conversation_at?: string | null
           id?: string
@@ -342,47 +243,15 @@ export type Database = {
           name?: string
           profile_meta?: Json
           updated_at?: string
+          whatsapp_account_id?: string
           whatsapp_number?: string
         }
         Relationships: [
           {
-            foreignKeyName: "customers_client_id_fkey"
-            columns: ["client_id"]
+            foreignKeyName: "customers_whatsapp_account_id_fkey"
+            columns: ["whatsapp_account_id"]
             isOneToOne: false
-            referencedRelation: "clients"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      employee_clients: {
-        Row: {
-          client_id: string
-          created_at: string
-          employee_id: string
-        }
-        Insert: {
-          client_id: string
-          created_at?: string
-          employee_id: string
-        }
-        Update: {
-          client_id?: string
-          created_at?: string
-          employee_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "employee_clients_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: false
-            referencedRelation: "clients"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "employee_clients_employee_id_fkey"
-            columns: ["employee_id"]
-            isOneToOne: false
-            referencedRelation: "users"
+            referencedRelation: "whatsapp_accounts"
             referencedColumns: ["id"]
           },
         ]
@@ -591,35 +460,35 @@ export type Database = {
       }
       response_time_settings: {
         Row: {
-          client_id: string | null
           created_at: string
           id: string
+          supervisor_id: string | null
           target_seconds: number
           updated_at: string
           warning_seconds: number
         }
         Insert: {
-          client_id?: string | null
           created_at?: string
           id?: string
+          supervisor_id?: string | null
           target_seconds?: number
           updated_at?: string
           warning_seconds?: number
         }
         Update: {
-          client_id?: string | null
           created_at?: string
           id?: string
+          supervisor_id?: string | null
           target_seconds?: number
           updated_at?: string
           warning_seconds?: number
         }
         Relationships: [
           {
-            foreignKeyName: "response_time_settings_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: true
-            referencedRelation: "clients"
+            foreignKeyName: "response_time_settings_supervisor_id_fkey"
+            columns: ["supervisor_id"]
+            isOneToOne: false
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -646,39 +515,6 @@ export type Database = {
             columns: ["permission_id"]
             isOneToOne: false
             referencedRelation: "permissions"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      supervisor_clients: {
-        Row: {
-          client_id: string
-          created_at: string
-          supervisor_id: string
-        }
-        Insert: {
-          client_id: string
-          created_at?: string
-          supervisor_id: string
-        }
-        Update: {
-          client_id?: string
-          created_at?: string
-          supervisor_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "supervisor_clients_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: false
-            referencedRelation: "clients"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "supervisor_clients_supervisor_id_fkey"
-            columns: ["supervisor_id"]
-            isOneToOne: false
-            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -832,7 +668,6 @@ export type Database = {
       whatsapp_accounts: {
         Row: {
           access_token_encrypted: string | null
-          client_id: string
           connected_at: string | null
           connected_via: string
           created_at: string
@@ -841,12 +676,12 @@ export type Database = {
           phone_number: string
           phone_number_id: string
           status: Database["public"]["Enums"]["whatsapp_account_status"]
+          supervisor_id: string
           updated_at: string
           waba_id: string
         }
         Insert: {
           access_token_encrypted?: string | null
-          client_id: string
           connected_at?: string | null
           connected_via?: string
           created_at?: string
@@ -855,12 +690,12 @@ export type Database = {
           phone_number: string
           phone_number_id: string
           status?: Database["public"]["Enums"]["whatsapp_account_status"]
+          supervisor_id: string
           updated_at?: string
           waba_id: string
         }
         Update: {
           access_token_encrypted?: string | null
-          client_id?: string
           connected_at?: string | null
           connected_via?: string
           created_at?: string
@@ -869,15 +704,16 @@ export type Database = {
           phone_number?: string
           phone_number_id?: string
           status?: Database["public"]["Enums"]["whatsapp_account_status"]
+          supervisor_id?: string
           updated_at?: string
           waba_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "whatsapp_accounts_client_id_fkey"
-            columns: ["client_id"]
+            foreignKeyName: "whatsapp_accounts_supervisor_id_fkey"
+            columns: ["supervisor_id"]
             isOneToOne: false
-            referencedRelation: "clients"
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -902,15 +738,10 @@ export type Database = {
       write_audit: {
         Args: {
           p_action: string
-          // p_client_id/p_resource_id have no SQL DEFAULT (so the generator
-          // marks them required) but both are plain nullable uuid params —
-          // every caller in this codebase legitimately passes null for
-          // action types with no associated client/resource.
-          p_client_id: string | null
           p_ip_address?: unknown
           p_new_value?: Json
           p_previous_value?: Json
-          p_resource_id: string | null
+          p_resource_id: string
           p_resource_type: string
         }
         Returns: string
@@ -935,7 +766,7 @@ export type Database = {
       message_direction: "in" | "out"
       message_sender_type: "customer" | "employee" | "system"
       message_status: "sent" | "delivered" | "read" | "failed"
-      user_role: "admin" | "supervisor" | "client" | "employee"
+      user_role: "admin" | "supervisor" | "employee"
       user_status: "active" | "inactive" | "suspended"
       whatsapp_account_status: "connected" | "disconnected"
     }
@@ -1085,7 +916,7 @@ export const Constants = {
       message_direction: ["in", "out"],
       message_sender_type: ["customer", "employee", "system"],
       message_status: ["sent", "delivered", "read", "failed"],
-      user_role: ["admin", "supervisor", "client", "employee"],
+      user_role: ["admin", "supervisor", "employee"],
       user_status: ["active", "inactive", "suspended"],
       whatsapp_account_status: ["connected", "disconnected"],
     },

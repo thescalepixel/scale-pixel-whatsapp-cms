@@ -13,7 +13,6 @@ const TONE_CLASS: Record<string, string> = {
   low: "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400",
   admin: "bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-400",
   supervisor: "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-400",
-  client: "bg-teal-50 text-teal-700 dark:bg-teal-950 dark:text-teal-400",
   employee: "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400",
 };
 

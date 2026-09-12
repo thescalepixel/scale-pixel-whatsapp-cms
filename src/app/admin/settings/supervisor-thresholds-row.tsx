@@ -1,17 +1,17 @@
 "use client";
 
 import { useRef, useTransition } from "react";
-import { setClientThresholdsAction, clearClientThresholdsAction } from "./actions";
+import { setSupervisorThresholdsAction, clearSupervisorThresholdsAction } from "./actions";
 
-export function ClientThresholdsRow({
-  clientId,
-  companyName,
+export function SupervisorThresholdsRow({
+  supervisorId,
+  fullName,
   targetMinutes,
   warningMinutes,
   isOverride,
 }: {
-  clientId: string;
-  companyName: string;
+  supervisorId: string;
+  fullName: string;
   targetMinutes: number;
   warningMinutes: number;
   isOverride: boolean;
@@ -22,11 +22,11 @@ export function ClientThresholdsRow({
   return (
     <form
       ref={formRef}
-      action={(formData) => startTransition(() => setClientThresholdsAction(clientId, formData))}
+      action={(formData) => startTransition(() => setSupervisorThresholdsAction(supervisorId, formData))}
       className="flex flex-wrap items-end gap-3 rounded-md border border-zinc-100 px-3 py-2 dark:border-zinc-800"
     >
       <div className="mr-auto">
-        <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50">{companyName}</p>
+        <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50">{fullName}</p>
         <p className="text-xs text-zinc-400">{isOverride ? "Custom" : "Using global default"}</p>
       </div>
       <div>
@@ -60,7 +60,7 @@ export function ClientThresholdsRow({
         <button
           type="button"
           disabled={pending}
-          onClick={() => startTransition(() => clearClientThresholdsAction(clientId))}
+          onClick={() => startTransition(() => clearSupervisorThresholdsAction(supervisorId))}
           className="text-xs font-medium text-red-600 hover:underline disabled:opacity-60"
         >
           Reset to default

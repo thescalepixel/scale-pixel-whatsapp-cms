@@ -4,8 +4,8 @@ import { Badge } from "@/components/ui/badge";
 
 export default async function SupervisorTeamPage() {
   const supabase = await createClient();
-  // RLS (users_select_scoped) already limits this to employees this
-  // supervisor is authorized to see — no client_id filtering needed here.
+  // RLS (users_select) already limits this to employees this supervisor
+  // is authorized to see — no manual supervisor_id filtering needed here.
   const { data: employees } = await supabase
     .from("users")
     .select("id, full_name, email, status, is_online, last_login_at")

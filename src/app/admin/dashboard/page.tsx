@@ -4,7 +4,7 @@ import { StatCard } from "@/components/ui/stat-card";
 
 async function count(
   supabase: Awaited<ReturnType<typeof createClient>>,
-  table: "clients" | "whatsapp_accounts" | "users" | "conversations",
+  table: "whatsapp_accounts" | "users" | "conversations",
   filters?: Record<string, string | boolean>,
 ) {
   let query = supabase.from(table).select("*", { count: "exact", head: true });
@@ -19,24 +19,22 @@ export default async function AdminDashboardPage() {
   const supabase = await createClient();
 
   const [
-    totalClients,
-    activeClients,
+    totalSupervisors,
+    activeSupervisors,
     totalWhatsapp,
     connectedWhatsapp,
     totalEmployees,
     onlineEmployees,
-    totalSupervisors,
     activeConversations,
     pendingConversations,
     resolvedConversations,
   ] = await Promise.all([
-    count(supabase, "clients"),
-    count(supabase, "clients", { status: "active" }),
+    count(supabase, "users", { role: "supervisor" }),
+    count(supabase, "users", { role: "supervisor", status: "active" }),
     count(supabase, "whatsapp_accounts"),
     count(supabase, "whatsapp_accounts", { status: "connected" }),
     count(supabase, "users", { role: "employee" }),
     count(supabase, "users", { role: "employee", is_online: true }),
-    count(supabase, "users", { role: "supervisor" }),
     count(supabase, "conversations", { status: "open" }),
     count(supabase, "conversations", { status: "pending" }),
     count(supabase, "conversations", { status: "resolved" }),
@@ -48,16 +46,15 @@ export default async function AdminDashboardPage() {
     <>
       <PageHeader
         title="Dashboard"
-        description="Platform-wide visibility across every client workspace."
+        description="Platform-wide visibility across every supervisor's team."
       />
       <div className="grid grid-cols-1 gap-4 p-8 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Total clients" value={totalClients} />
-        <StatCard label="Active clients" value={activeClients} tone="success" />
+        <StatCard label="Total supervisors" value={totalSupervisors} />
+        <StatCard label="Active supervisors" value={activeSupervisors} tone="success" />
         <StatCard label="WhatsApp accounts" value={totalWhatsapp} />
         <StatCard label="Connected accounts" value={connectedWhatsapp} tone="success" />
         <StatCard label="Total employees" value={totalEmployees} />
         <StatCard label="Online employees" value={onlineEmployees} tone="success" />
-        <StatCard label="Total supervisors" value={totalSupervisors} />
         <StatCard label="Active conversations" value={activeConversations} />
         <StatCard
           label="Unanswered conversations"
@@ -70,7 +67,7 @@ export default async function AdminDashboardPage() {
 
       <div className="px-8 pb-8">
         <div className="rounded-lg border border-dashed border-zinc-300 bg-white p-6 text-sm text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400">
-          Response-time charts, conversation trends, and per-employee/per-client breakdowns land
+          Response-time charts, conversation trends, and per-employee/per-supervisor breakdowns land
           with the Conversations + Analytics phases.
         </div>
       </div>

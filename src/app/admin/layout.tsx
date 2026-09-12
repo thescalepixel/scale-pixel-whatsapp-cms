@@ -4,7 +4,6 @@ import { getUnreadNotificationCount } from "@/lib/notifications/queries";
 
 const NAV: NavItem[] = [
   { label: "Dashboard", href: "/admin/dashboard" },
-  { label: "Clients", href: "/admin/clients" },
   { label: "WhatsApp Accounts", href: "/admin/whatsapp-accounts" },
   { label: "Conversations", href: "/admin/conversations" },
   { label: "Employees", href: "/admin/employees" },

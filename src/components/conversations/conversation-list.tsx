@@ -24,17 +24,17 @@ const INDICATOR_STYLE = {
 export async function ConversationList({
   conversations,
   basePath,
-  showClient = false,
+  showAccount = false,
 }: {
   conversations: ConversationListRow[];
   basePath: string;
-  showClient?: boolean;
+  showAccount?: boolean;
 }) {
   const thresholdsMap = await getResponseThresholdsMap();
   // No filter: RLS still governs what this connection actually receives —
   // this just triggers a refresh on any conversation change this session
   // is authorized to see, since a list can be scoped several different
-  // ways (assigned-to-me, unassigned queue, whole client, everything).
+  // ways (assigned-to-me, unassigned queue, whole account, everything).
   const liveRefresher = <RealtimeRefresher channelName={`conversations-${basePath}`} table="conversations" />;
 
   if (conversations.length === 0) {
@@ -56,7 +56,7 @@ export async function ConversationList({
         <thead className="border-b border-zinc-200 bg-zinc-50 text-xs font-medium uppercase tracking-wide text-zinc-500 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-400">
           <tr>
             <th className="px-4 py-3">Customer</th>
-            {showClient && <th className="px-4 py-3">Client</th>}
+            {showAccount && <th className="px-4 py-3">Account</th>}
             <th className="px-4 py-3">Assigned to</th>
             <th className="px-4 py-3">Status</th>
             <th className="px-4 py-3">Priority</th>
@@ -69,7 +69,9 @@ export async function ConversationList({
           {conversations.map((c) => {
             const showIndicator = c.awaiting_response && c.status !== "resolved" && c.last_message_at;
             const indicator = showIndicator
-              ? INDICATOR_STYLE[computeResponseIndicator(c.last_message_at!, thresholdsFor(thresholdsMap, c.client?.id ?? null))]
+              ? INDICATOR_STYLE[
+                  computeResponseIndicator(c.last_message_at!, thresholdsFor(thresholdsMap, c.whatsapp_account?.supervisor_id ?? null))
+                ]
               : null;
             return (
             <tr key={c.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
@@ -86,8 +88,8 @@ export async function ConversationList({
                   <div className="text-xs text-zinc-500 dark:text-zinc-400">{c.customer?.whatsapp_number}</div>
                 </Link>
               </td>
-              {showClient && (
-                <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400">{c.client?.company_name ?? "—"}</td>
+              {showAccount && (
+                <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400">{c.whatsapp_account?.display_name ?? "—"}</td>
               )}
               <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400">
                 {c.assigned_employee?.full_name ?? <span className="italic text-zinc-400">Unassigned</span>}

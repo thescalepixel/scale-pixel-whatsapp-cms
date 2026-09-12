@@ -2,8 +2,9 @@ import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/stat-card";
 
-// Every query here is scoped automatically by RLS (supervisor_clients /
-// employee_clients membership) — no manual client_id filtering needed.
+// Every query here is scoped automatically by RLS (direct account
+// ownership / whatsapp_account_employees membership) — no manual
+// supervisor_id filtering needed.
 export default async function SupervisorDashboardPage() {
   const supabase = await createClient();
 

@@ -8,7 +8,6 @@ export type NavItem = { label: string; href: string };
 const ROLE_LABEL: Record<CurrentUser["role"], string> = {
   admin: "Admin",
   supervisor: "Supervisor",
-  client: "Client",
   employee: "Employee",
 };
 

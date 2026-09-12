@@ -9,12 +9,12 @@ export default async function SupervisorConversationDetailPage({ params }: { par
   if (!detail) notFound();
 
   const supabase = await createClient();
-  // RLS (employee_clients_select) already scopes this to employees on
-  // clients this supervisor is assigned to.
+  // RLS (whatsapp_account_employees_select) already scopes this to
+  // employees on WhatsApp accounts this supervisor owns.
   const { data: assignable } = await supabase
-    .from("employee_clients")
+    .from("whatsapp_account_employees")
     .select("employee:employee_id ( id, full_name )")
-    .eq("client_id", detail.conversation.client?.id ?? "");
+    .eq("whatsapp_account_id", detail.conversation.whatsapp_account?.id ?? "");
 
   const assignableEmployees = (assignable ?? [])
     .map((r) => (Array.isArray(r.employee) ? r.employee[0] : r.employee))

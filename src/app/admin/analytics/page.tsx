@@ -26,7 +26,7 @@ export default async function AdminAnalyticsPage() {
         </div>
         <BarChart title="Conversations by status" data={a.byStatus} />
         <BarChart title="Conversations by priority" data={a.byPriority} />
-        <BarChart title="Conversations by client" data={a.byClient} />
+        <BarChart title="Conversations by supervisor" data={a.bySupervisor} />
         <BarChart title="Conversations by employee" data={a.byEmployee} />
         <BarChart title="Conversations by WhatsApp account" data={a.byWhatsappAccount} />
       </div>

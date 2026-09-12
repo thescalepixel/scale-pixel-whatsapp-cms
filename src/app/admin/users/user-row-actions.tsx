@@ -5,7 +5,7 @@ import { useState, useTransition } from "react";
 import { setUserStatusAction, resetUserPasswordAction, changeUserRoleAction } from "./actions";
 import type { Enums } from "@/lib/supabase/database.types";
 
-const ROLES: Enums<"user_role">[] = ["admin", "supervisor", "client", "employee"];
+const ROLES: Enums<"user_role">[] = ["admin", "supervisor", "employee"];
 
 export function UserRowActions({
   userId,
@@ -72,7 +72,7 @@ export function UserRowActions({
           Cancel
         </ActionButton>
         {newRole !== role && (
-          <span className="text-amber-600 dark:text-amber-400">Clears this user&apos;s client/team assignments.</span>
+          <span className="text-amber-600 dark:text-amber-400">Clears this user&apos;s team/account assignments.</span>
         )}
       </div>
     );

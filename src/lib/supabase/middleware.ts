@@ -5,14 +5,12 @@ import type { Database } from "./database.types";
 const ROLE_HOME: Record<string, string> = {
   admin: "/admin/dashboard",
   supervisor: "/supervisor/dashboard",
-  client: "/client/dashboard",
   employee: "/employee/dashboard",
 };
 
 const ROLE_PREFIX: Record<string, string> = {
   admin: "/admin",
   supervisor: "/supervisor",
-  client: "/client",
   employee: "/employee",
 };
 

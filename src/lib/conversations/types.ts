@@ -8,8 +8,7 @@ export type ConversationListRow = {
   awaiting_response: boolean;
   last_message_at: string | null;
   created_at: string;
-  client: { id: string; company_name: string } | null;
-  whatsapp_account: { id: string; display_name: string } | null;
+  whatsapp_account: { id: string; display_name: string; supervisor_id: string } | null;
   customer: { id: string; name: string; whatsapp_number: string } | null;
   assigned_employee: { id: string; full_name: string } | null;
   tags: { id: string; name: string; color: string }[];

@@ -25,7 +25,7 @@ export default async function SupervisorAnalyticsPage() {
           <LineChart title="Conversations created — last 14 days" data={a.overTime} />
         </div>
         <BarChart title="Conversations by status" data={a.byStatus} />
-        <BarChart title="Conversations by client" data={a.byClient} />
+        <BarChart title="Conversations by supervisor" data={a.bySupervisor} />
         <BarChart title="Conversations by employee" data={a.byEmployee} />
       </div>
     </>

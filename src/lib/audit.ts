@@ -5,7 +5,6 @@ type AuditParams = {
   action: string;
   resourceType: string;
   resourceId?: string | null;
-  clientId?: string | null;
   previousValue?: unknown;
   newValue?: unknown;
 };
@@ -21,7 +20,6 @@ export async function writeAudit({
   action,
   resourceType,
   resourceId = null,
-  clientId = null,
   previousValue = null,
   newValue = null,
 }: AuditParams) {
@@ -29,8 +27,7 @@ export async function writeAudit({
   const { error } = await supabase.rpc("write_audit", {
     p_action: action,
     p_resource_type: resourceType,
-    p_resource_id: resourceId,
-    p_client_id: clientId,
+    p_resource_id: resourceId as never,
     p_previous_value: previousValue as never,
     p_new_value: newValue as never,
     p_ip_address: null,

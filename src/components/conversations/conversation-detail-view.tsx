@@ -42,7 +42,7 @@ export function ConversationDetailView({
       />
       <PageHeader
         title={conversation.customer?.name || "Unknown customer"}
-        description={`${conversation.customer?.whatsapp_number ?? ""} · ${conversation.client?.company_name ?? ""} · ${conversation.whatsapp_account?.display_name ?? ""}`}
+        description={`${conversation.customer?.whatsapp_number ?? ""} · ${conversation.whatsapp_account?.display_name ?? ""}`}
         actions={
           <div className="flex gap-2">
             <Badge tone={conversation.status}>{conversation.status}</Badge>

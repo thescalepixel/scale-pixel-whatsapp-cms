@@ -5,25 +5,25 @@ import { connectWhatsAppAccountAction, type FormState } from "../actions";
 
 const initialState: FormState = { error: null };
 
-export function ConnectAccountForm({ clients }: { clients: { id: string; company_name: string }[] }) {
+export function ConnectAccountForm({ supervisors }: { supervisors: { id: string; full_name: string }[] }) {
   const [state, formAction, pending] = useActionState(connectWhatsAppAccountAction, initialState);
 
   return (
     <form action={formAction} className="space-y-4">
       <div>
-        <label htmlFor="client_id" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Client
+        <label htmlFor="supervisor_id" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+          Supervisor
         </label>
         <select
-          id="client_id"
-          name="client_id"
+          id="supervisor_id"
+          name="supervisor_id"
           required
           className="mt-1 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-emerald-500 dark:border-zinc-700 dark:bg-zinc-950"
         >
-          <option value="">Select a client…</option>
-          {clients.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.company_name}
+          <option value="">Select a supervisor…</option>
+          {supervisors.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.full_name}
             </option>
           ))}
         </select>

@@ -12,12 +12,12 @@ const OPTIONS: { value: Enums<"assignment_strategy">; label: string }[] = [
 
 export function AssignmentRuleRow({
   label,
-  clientId,
+  supervisorId,
   currentStrategy,
   inheritedLabel,
 }: {
   label: string;
-  clientId: string | null;
+  supervisorId: string | null;
   currentStrategy: Enums<"assignment_strategy"> | null;
   inheritedLabel?: string;
 }) {
@@ -34,7 +34,7 @@ export function AssignmentRuleRow({
         disabled={pending}
         onChange={(e) => {
           const formData = new FormData();
-          formData.set("client_id", clientId ?? "");
+          formData.set("supervisor_id", supervisorId ?? "");
           formData.set("strategy", e.target.value);
           startTransition(() => setAssignmentRuleAction(formData));
         }}

@@ -7,14 +7,14 @@ export default async function AdminWhatsAppAccountsPage() {
   const supabase = await createClient();
   const { data: accounts } = await supabase
     .from("whatsapp_accounts")
-    .select("id, display_name, phone_number, status, connected_at, connected_via, client:client_id ( company_name )")
+    .select("id, display_name, phone_number, status, connected_at, connected_via, supervisor:supervisor_id ( full_name )")
     .order("created_at", { ascending: false });
 
   return (
     <>
       <PageHeader
         title="WhatsApp Accounts"
-        description="WhatsApp Business accounts connected per client."
+        description="WhatsApp Business accounts connected per supervisor."
         actions={
           <div className="flex items-center gap-2">
             <Link
@@ -38,14 +38,14 @@ export default async function AdminWhatsAppAccountsPage() {
             <thead className="border-b border-zinc-200 bg-zinc-50 text-xs font-medium uppercase tracking-wide text-zinc-500 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-400">
               <tr>
                 <th className="px-4 py-3">Account</th>
-                <th className="px-4 py-3">Client</th>
+                <th className="px-4 py-3">Supervisor</th>
                 <th className="px-4 py-3">Phone number</th>
                 <th className="px-4 py-3">Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
               {accounts?.map((a) => {
-                const client = Array.isArray(a.client) ? a.client[0] : a.client;
+                const supervisor = Array.isArray(a.supervisor) ? a.supervisor[0] : a.supervisor;
                 return (
                   <tr key={a.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
                     <td className="px-4 py-3">
@@ -56,7 +56,7 @@ export default async function AdminWhatsAppAccountsPage() {
                         {a.display_name}
                       </Link>
                     </td>
-                    <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400">{client?.company_name ?? "—"}</td>
+                    <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400">{supervisor?.full_name ?? "—"}</td>
                     <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400">{a.phone_number}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1.5">

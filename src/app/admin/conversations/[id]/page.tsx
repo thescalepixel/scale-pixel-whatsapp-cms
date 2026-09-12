@@ -10,9 +10,9 @@ export default async function AdminConversationDetailPage({ params }: { params: 
 
   const supabase = await createClient();
   const { data: assignable } = await supabase
-    .from("employee_clients")
+    .from("whatsapp_account_employees")
     .select("employee:employee_id ( id, full_name )")
-    .eq("client_id", detail.conversation.client?.id ?? "");
+    .eq("whatsapp_account_id", detail.conversation.whatsapp_account?.id ?? "");
 
   const assignableEmployees = (assignable ?? [])
     .map((r) => (Array.isArray(r.employee) ? r.employee[0] : r.employee))

@@ -10,7 +10,7 @@ import {
 
 const initialAddState: ConnectionFormState = { error: null };
 
-export function DiscoverAccounts({ clients }: { clients: { id: string; company_name: string }[] }) {
+export function DiscoverAccounts({ supervisors }: { supervisors: { id: string; full_name: string }[] }) {
   const [pending, startTransition] = useTransition();
   const [result, setResult] = useState<{ accounts: DiscoveredNumber[] } | { error: string } | null>(null);
 
@@ -66,7 +66,7 @@ export function DiscoverAccounts({ clients }: { clients: { id: string; company_n
               </div>
               <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
                 {group.numbers.map((n) => (
-                  <DiscoveredRow key={n.phoneNumberId} number={n} clients={clients} onAdded={markConnected} />
+                  <DiscoveredRow key={n.phoneNumberId} number={n} supervisors={supervisors} onAdded={markConnected} />
                 ))}
               </div>
             </div>
@@ -85,11 +85,11 @@ export function DiscoverAccounts({ clients }: { clients: { id: string; company_n
 
 function DiscoveredRow({
   number,
-  clients,
+  supervisors,
   onAdded,
 }: {
   number: DiscoveredNumber;
-  clients: { id: string; company_name: string }[];
+  supervisors: { id: string; full_name: string }[];
   onAdded: (phoneNumberId: string) => void;
 }) {
   const [state, formAction, pending] = useActionState(async (prev: ConnectionFormState, formData: FormData) => {
@@ -119,14 +119,14 @@ function DiscoveredRow({
           <input type="hidden" name="phone_number_id" value={number.phoneNumberId} />
           <input type="hidden" name="waba_id" value={number.wabaId} />
           <select
-            name="client_id"
+            name="supervisor_id"
             required
             className="rounded-md border border-zinc-300 px-2 py-1.5 text-xs outline-none focus:border-emerald-500 dark:border-zinc-700 dark:bg-zinc-950"
           >
-            <option value="">Assign to client…</option>
-            {clients.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.company_name}
+            <option value="">Assign to supervisor…</option>
+            {supervisors.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.full_name}
               </option>
             ))}
           </select>

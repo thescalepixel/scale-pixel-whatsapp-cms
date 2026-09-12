@@ -4,8 +4,7 @@ import type { ConversationListRow, MessageRow, NoteRow } from "./types";
 
 const LIST_SELECT = `
   id, status, priority, unread_count, awaiting_response, last_message_at, created_at,
-  client:client_id ( id, company_name ),
-  whatsapp_account:whatsapp_account_id ( id, display_name ),
+  whatsapp_account:whatsapp_account_id ( id, display_name, supervisor_id ),
   customer:customer_id ( id, name, whatsapp_number ),
   assigned_employee:assigned_employee_id ( id, full_name ),
   conversation_tags ( tags ( id, name, color ) )
@@ -71,8 +70,10 @@ export async function listConversations(filters: ConversationFilters = {}): Prom
       awaiting_response: boolean;
       last_message_at: string | null;
       created_at: string;
-      client: { id: string; company_name: string } | { id: string; company_name: string }[] | null;
-      whatsapp_account: { id: string; display_name: string } | { id: string; display_name: string }[] | null;
+      whatsapp_account:
+        | { id: string; display_name: string; supervisor_id: string }
+        | { id: string; display_name: string; supervisor_id: string }[]
+        | null;
       customer: ConversationListRow["customer"] | ConversationListRow["customer"][] | null;
       assigned_employee: ConversationListRow["assigned_employee"] | ConversationListRow["assigned_employee"][] | null;
       conversation_tags: { tags: { id: string; name: string; color: string } | { id: string; name: string; color: string }[] | null }[];
@@ -86,7 +87,6 @@ export async function listConversations(filters: ConversationFilters = {}): Prom
       awaiting_response: r.awaiting_response,
       last_message_at: r.last_message_at,
       created_at: r.created_at,
-      client: one(r.client),
       whatsapp_account: one(r.whatsapp_account),
       customer: one(r.customer),
       assigned_employee: one(r.assigned_employee),
@@ -131,8 +131,10 @@ export async function getConversationDetail(id: string) {
     unread_count: number;
     last_message_at: string | null;
     created_at: string;
-    client: { id: string; company_name: string } | { id: string; company_name: string }[] | null;
-    whatsapp_account: { id: string; display_name: string } | { id: string; display_name: string }[] | null;
+    whatsapp_account:
+      | { id: string; display_name: string; supervisor_id: string }
+      | { id: string; display_name: string; supervisor_id: string }[]
+      | null;
     customer:
       | { id: string; name: string; whatsapp_number: string }
       | { id: string; name: string; whatsapp_number: string }[]
@@ -150,7 +152,6 @@ export async function getConversationDetail(id: string) {
       unread_count: r.unread_count,
       last_message_at: r.last_message_at,
       created_at: r.created_at,
-      client: one(r.client),
       whatsapp_account: one(r.whatsapp_account),
       customer: one(r.customer),
       assigned_employee: one(r.assigned_employee),

@@ -21,14 +21,12 @@ export async function createUserAction(
   const phone = String(formData.get("phone") ?? "").trim() || null;
   const role = String(formData.get("role") ?? "") as Enums<"user_role">;
   const supervisorId = String(formData.get("supervisor_id") ?? "") || null;
-  const clientId = String(formData.get("client_id") ?? "") || null;
-  const permissionLevel = String(formData.get("permission_level") ?? "view_only") as Enums<"client_permission_level">;
 
   if (!fullName || !email || !role) {
     return { error: "Full name, email and role are required." };
   }
-  if (role === "client" && !clientId) {
-    return { error: "Select which client workspace this portal user belongs to." };
+  if (role === "employee" && !supervisorId) {
+    return { error: "Select which supervisor this employee reports to." };
   }
 
   const admin = createAdminClient();
@@ -65,22 +63,7 @@ export async function createUserAction(
     return { error: "Couldn't create the user profile. Try again." };
   }
 
-  // 3. Role-specific linkage.
-  if (role === "client" && clientId) {
-    await admin.from("client_users").insert({
-      client_id: clientId,
-      user_id: authUser.user.id,
-      permission_level: permissionLevel,
-    });
-  }
-  if (role === "employee" && clientId) {
-    await admin.from("employee_clients").insert({ client_id: clientId, employee_id: authUser.user.id });
-  }
-  if (role === "supervisor" && clientId) {
-    await admin.from("supervisor_clients").insert({ client_id: clientId, supervisor_id: authUser.user.id });
-  }
-
-  // 4. Send the account's first-login password link.
+  // 3. Send the account's first-login password link.
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
   await admin.auth.resetPasswordForEmail(email, {
     redirectTo: `${siteUrl}/auth/callback?next=/reset-password`,
@@ -90,7 +73,6 @@ export async function createUserAction(
     action: "user.create",
     resourceType: "user",
     resourceId: authUser.user.id,
-    clientId,
     newValue: { full_name: fullName, email, role },
   });
 
@@ -119,10 +101,9 @@ export async function setUserStatusAction(userId: string, status: Enums<"user_st
 
 /**
  * Changes an existing user's role. Every role-specific association
- * (client_users, employee_clients, supervisor_clients, whatsapp_account_
- * employees, and being someone's supervisor) is tied to the OLD role and
- * makes no sense under the new one, so it's cleared here — the admin
- * re-assigns the user from the Clients/WhatsApp Accounts screens
+ * (whatsapp_account_employees, and being someone's supervisor) is tied to
+ * the OLD role and makes no sense under the new one, so it's cleared here —
+ * the admin re-assigns the user from the WhatsApp Accounts screen
  * afterward, same flow as setting up a brand new account.
  */
 export async function changeUserRoleAction(
@@ -141,9 +122,6 @@ export async function changeUserRoleAction(
   if (before.role === newRole) return { error: null };
 
   await Promise.all([
-    supabase.from("client_users").delete().eq("user_id", userId),
-    supabase.from("employee_clients").delete().eq("employee_id", userId),
-    supabase.from("supervisor_clients").delete().eq("supervisor_id", userId),
     supabase.from("whatsapp_account_employees").delete().eq("employee_id", userId),
     supabase.from("users").update({ supervisor_id: null }).eq("supervisor_id", userId),
     supabase.from("conversations").update({ assigned_employee_id: null }).eq("assigned_employee_id", userId),

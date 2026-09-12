@@ -16,7 +16,7 @@ export default async function AdminConversationsPage({
       <PageHeader title="Conversations" description="Every conversation across every client." />
       <div className="p-8">
         <FilterBar basePath="/admin/conversations" currentStatus={status} currentPriority={priority} currentQuery={q} />
-        <ConversationList conversations={conversations} basePath="/admin/conversations" showClient />
+        <ConversationList conversations={conversations} basePath="/admin/conversations" showAccount />
       </div>
     </>
   );

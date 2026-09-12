@@ -9,9 +9,9 @@ export type EmployeePerformanceRow = {
   avgFirstResponseMinutes: number | null;
 };
 
-export type ClientActivityRow = {
-  clientId: string;
-  companyName: string;
+export type SupervisorActivityRow = {
+  supervisorId: string;
+  fullName: string;
   total: number;
   active: number;
   resolved: number;
@@ -60,27 +60,34 @@ export async function getEmployeePerformanceReport(): Promise<EmployeePerformanc
     .sort((a, b) => b.total - a.total);
 }
 
-export async function getClientActivityReport(): Promise<ClientActivityRow[]> {
+export async function getSupervisorActivityReport(): Promise<SupervisorActivityRow[]> {
   const supabase = await createClient();
-  const { data: conversations } = await supabase.from("conversations").select("client_id, status");
+  const { data: conversations } = await supabase
+    .from("conversations")
+    .select("status, whatsapp_account:whatsapp_account_id ( supervisor_id )");
 
-  const rows = conversations ?? [];
-  const clientIds = [...new Set(rows.map((r) => r.client_id))];
-  if (clientIds.length === 0) return [];
+  type Row = { status: string; supervisorId: string | null };
+  const rows: Row[] = (conversations ?? []).map((r) => {
+    const wa = Array.isArray(r.whatsapp_account) ? r.whatsapp_account[0] : r.whatsapp_account;
+    return { status: r.status, supervisorId: wa?.supervisor_id ?? null };
+  });
+  const supervisorIds = [...new Set(rows.map((r) => r.supervisorId).filter((v): v is string => !!v))];
+  if (supervisorIds.length === 0) return [];
 
-  const { data: clients } = await supabase.from("clients").select("id, company_name").in("id", clientIds);
-  const nameById = new Map((clients ?? []).map((c) => [c.id, c.company_name]));
+  const { data: supervisors } = await supabase.from("users").select("id, full_name").in("id", supervisorIds);
+  const nameById = new Map((supervisors ?? []).map((s) => [s.id, s.full_name]));
 
-  const byClient = new Map<string, typeof rows>();
+  const bySupervisor = new Map<string, Row[]>();
   for (const r of rows) {
-    if (!byClient.has(r.client_id)) byClient.set(r.client_id, []);
-    byClient.get(r.client_id)!.push(r);
+    if (!r.supervisorId) continue;
+    if (!bySupervisor.has(r.supervisorId)) bySupervisor.set(r.supervisorId, []);
+    bySupervisor.get(r.supervisorId)!.push(r);
   }
 
-  return [...byClient.entries()]
-    .map(([clientId, convs]) => ({
-      clientId,
-      companyName: nameById.get(clientId) ?? "Unknown",
+  return [...bySupervisor.entries()]
+    .map(([supervisorId, convs]) => ({
+      supervisorId,
+      fullName: nameById.get(supervisorId) ?? "Unknown",
       total: convs.length,
       active: convs.filter((c) => c.status === "open" || c.status === "new" || c.status === "pending").length,
       resolved: convs.filter((c) => c.status === "resolved").length,

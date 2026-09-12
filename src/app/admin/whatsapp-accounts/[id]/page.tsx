@@ -16,32 +16,32 @@ export default async function WhatsAppAccountDetailPage({ params }: { params: Pr
 
   const { data: account } = await supabase
     .from("whatsapp_accounts")
-    .select("id, display_name, phone_number, phone_number_id, waba_id, status, connected_at, client:client_id ( id, company_name )")
+    .select("id, display_name, phone_number, phone_number_id, waba_id, status, connected_at, supervisor:supervisor_id ( id, full_name )")
     .eq("id", id)
     .single();
   if (!account) notFound();
-  const client = Array.isArray(account.client) ? account.client[0] : account.client;
+  const supervisor = Array.isArray(account.supervisor) ? account.supervisor[0] : account.supervisor;
 
-  const [{ data: assignedLinks }, { data: clientEmployees }] = await Promise.all([
+  const [{ data: assignedLinks }, { data: supervisorEmployees }] = await Promise.all([
     supabase
       .from("whatsapp_account_employees")
       .select("employee_id, employee:employee_id ( id, full_name )")
       .eq("whatsapp_account_id", id),
-    client
-      ? supabase.from("employee_clients").select("employee:employee_id ( id, full_name )").eq("client_id", client.id)
+    supervisor
+      ? supabase.from("users").select("id, full_name").eq("role", "employee").eq("supervisor_id", supervisor.id)
       : Promise.resolve({ data: [] }),
   ]);
 
   const assignedIds = new Set((assignedLinks ?? []).map((l) => l.employee_id));
-  const available = ((clientEmployees ?? []) as { employee: { id: string; full_name: string } | { id: string; full_name: string }[] | null }[])
-    .map((r) => (Array.isArray(r.employee) ? r.employee[0] : r.employee))
-    .filter((e): e is { id: string; full_name: string } => !!e && !assignedIds.has(e.id));
+  const available = ((supervisorEmployees ?? []) as { id: string; full_name: string }[]).filter(
+    (e) => !assignedIds.has(e.id),
+  );
 
   return (
     <>
       <PageHeader
         title={account.display_name}
-        description={`${account.phone_number} · ${client?.company_name ?? "—"}`}
+        description={`${account.phone_number} · ${supervisor?.full_name ?? "—"}`}
         actions={
           <div className="flex items-center gap-2">
             <Badge tone={account.status}>{account.status}</Badge>
@@ -127,10 +127,10 @@ export default async function WhatsAppAccountDetailPage({ params }: { params: Pr
               </button>
             </form>
           )}
-          {available.length === 0 && assignedLinks?.length !== clientEmployees?.length && (
+          {available.length === 0 && assignedLinks?.length !== supervisorEmployees?.length && (
             <p className="text-xs text-zinc-400">
-              Only employees assigned to {client?.company_name ?? "this client"} can be assigned to its WhatsApp
-              accounts.
+              Only employees reporting to {supervisor?.full_name ?? "this supervisor"} can be assigned to this
+              WhatsApp account.
             </p>
           )}
         </section>

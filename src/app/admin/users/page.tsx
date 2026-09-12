@@ -9,7 +9,6 @@ const ROLE_FILTERS: { label: string; value: Enums<"user_role"> | "all" }[] = [
   { label: "All roles", value: "all" },
   { label: "Admins", value: "admin" },
   { label: "Supervisors", value: "supervisor" },
-  { label: "Clients", value: "client" },
   { label: "Employees", value: "employee" },
 ];
 

@@ -15,23 +15,26 @@ export async function getAnalyticsSnapshot() {
   const { data: conversations } = await supabase
     .from("conversations")
     .select(
-      "id, status, priority, created_at, first_response_at, resolved_at, client_id, assigned_employee_id, whatsapp_account_id",
+      "id, status, priority, created_at, first_response_at, resolved_at, assigned_employee_id, whatsapp_account_id",
     );
 
   const rows = conversations ?? [];
-  const clientIds = [...new Set(rows.map((r) => r.client_id))];
   const employeeIds = [...new Set(rows.map((r) => r.assigned_employee_id).filter((v): v is string => !!v))];
   const waIds = [...new Set(rows.map((r) => r.whatsapp_account_id))];
 
-  const [{ data: clients }, { data: employees }, { data: waAccounts }] = await Promise.all([
-    clientIds.length ? supabase.from("clients").select("id, company_name").in("id", clientIds) : Promise.resolve({ data: [] }),
+  const [{ data: employees }, { data: waAccounts }] = await Promise.all([
     employeeIds.length ? supabase.from("users").select("id, full_name").in("id", employeeIds) : Promise.resolve({ data: [] }),
-    waIds.length ? supabase.from("whatsapp_accounts").select("id, display_name").in("id", waIds) : Promise.resolve({ data: [] }),
+    waIds.length ? supabase.from("whatsapp_accounts").select("id, display_name, supervisor:supervisor_id ( full_name )").in("id", waIds) : Promise.resolve({ data: [] }),
   ]);
 
-  const clientName = new Map((clients ?? []).map((c) => [c.id, c.company_name]));
   const employeeName = new Map((employees ?? []).map((e) => [e.id, e.full_name]));
   const waName = new Map((waAccounts ?? []).map((w) => [w.id, w.display_name]));
+  const supervisorNameByWaId = new Map(
+    (waAccounts ?? []).map((w) => {
+      const s = Array.isArray(w.supervisor) ? w.supervisor[0] : w.supervisor;
+      return [w.id, s?.full_name ?? "Unknown"];
+    }),
+  );
 
   const countBy = <K extends string>(keyFn: (r: (typeof rows)[number]) => K | null) => {
     const map = new Map<K, number>();
@@ -46,7 +49,7 @@ export async function getAnalyticsSnapshot() {
   const byStatus = countBy((r) => r.status);
   const byPriority = countBy((r) => r.priority);
   const byEmployeeMap = countBy((r) => (r.assigned_employee_id ? employeeName.get(r.assigned_employee_id) ?? "Unknown" : null));
-  const byClientMap = countBy((r) => clientName.get(r.client_id) ?? "Unknown");
+  const bySupervisorMap = countBy((r) => supervisorNameByWaId.get(r.whatsapp_account_id) ?? "Unknown");
   const byWaMap = countBy((r) => waName.get(r.whatsapp_account_id) ?? "Unknown");
 
   // Daily conversation volume, last 14 days.
@@ -91,7 +94,7 @@ export async function getAnalyticsSnapshot() {
     byStatus: toBarData(byStatus),
     byPriority: toBarData(byPriority),
     byEmployee: toBarData(byEmployeeMap),
-    byClient: toBarData(byClientMap),
+    bySupervisor: toBarData(bySupervisorMap),
     byWhatsappAccount: toBarData(byWaMap),
     overTime: days.map((label) => ({ label, value: dayCounts.get(label) ?? 0 })),
   };

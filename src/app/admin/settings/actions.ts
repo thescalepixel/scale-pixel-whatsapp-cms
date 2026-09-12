@@ -24,7 +24,7 @@ export async function updateGlobalResponseThresholdsAction(
   const { error } = await supabase
     .from("response_time_settings")
     .update({ target_seconds: targetMinutes * 60, warning_seconds: warningMinutes * 60 })
-    .is("client_id", null);
+    .is("supervisor_id", null);
   if (error) return { error: "Couldn't save thresholds." };
 
   await writeAudit({
@@ -36,7 +36,7 @@ export async function updateGlobalResponseThresholdsAction(
   return { error: null };
 }
 
-export async function setClientThresholdsAction(clientId: string, formData: FormData) {
+export async function setSupervisorThresholdsAction(supervisorId: string, formData: FormData) {
   await requireUser(["admin"]);
   const supabase = await createClient();
 
@@ -47,24 +47,24 @@ export async function setClientThresholdsAction(clientId: string, formData: Form
   await supabase
     .from("response_time_settings")
     .upsert(
-      { client_id: clientId, target_seconds: targetMinutes * 60, warning_seconds: warningMinutes * 60 },
-      { onConflict: "client_id" },
+      { supervisor_id: supervisorId, target_seconds: targetMinutes * 60, warning_seconds: warningMinutes * 60 },
+      { onConflict: "supervisor_id" },
     );
 
   await writeAudit({
     action: "settings.response_thresholds_update",
     resourceType: "response_time_settings",
-    clientId,
+    resourceId: supervisorId,
     newValue: { target_minutes: targetMinutes, warning_minutes: warningMinutes },
   });
   revalidatePath("/admin/settings");
 }
 
-export async function clearClientThresholdsAction(clientId: string) {
+export async function clearSupervisorThresholdsAction(supervisorId: string) {
   await requireUser(["admin"]);
   const supabase = await createClient();
-  await supabase.from("response_time_settings").delete().eq("client_id", clientId);
-  await writeAudit({ action: "settings.response_thresholds_reset", resourceType: "response_time_settings", clientId });
+  await supabase.from("response_time_settings").delete().eq("supervisor_id", supervisorId);
+  await writeAudit({ action: "settings.response_thresholds_reset", resourceType: "response_time_settings", resourceId: supervisorId });
   revalidatePath("/admin/settings");
 }
 
@@ -72,25 +72,25 @@ export async function setAssignmentRuleAction(formData: FormData) {
   await requireUser(["admin"]);
   const supabase = await createClient();
 
-  const clientId = String(formData.get("client_id") ?? "") || null;
+  const supervisorId = String(formData.get("supervisor_id") ?? "") || null;
   const strategy = String(formData.get("strategy") ?? "manual") as Enums<"assignment_strategy">;
   const enabled = strategy !== "manual";
 
-  const { data: existing } = await (clientId
-    ? supabase.from("assignment_rules").select("id").eq("client_id", clientId)
-    : supabase.from("assignment_rules").select("id").is("client_id", null)
+  const { data: existing } = await (supervisorId
+    ? supabase.from("assignment_rules").select("id").eq("supervisor_id", supervisorId)
+    : supabase.from("assignment_rules").select("id").is("supervisor_id", null)
   ).maybeSingle();
 
   if (existing) {
     await supabase.from("assignment_rules").update({ strategy, enabled }).eq("id", existing.id);
   } else {
-    await supabase.from("assignment_rules").insert({ client_id: clientId, strategy, enabled });
+    await supabase.from("assignment_rules").insert({ supervisor_id: supervisorId, strategy, enabled });
   }
 
   await writeAudit({
     action: "settings.assignment_rule_update",
     resourceType: "assignment_rules",
-    clientId,
+    resourceId: supervisorId,
     newValue: { strategy, enabled },
   });
   revalidatePath("/admin/settings");

@@ -176,14 +176,14 @@ export async function addDiscoveredAccountAction(
   await requireUser(["admin"]);
   const supabase = await createClient();
 
-  const clientId = String(formData.get("client_id") ?? "");
+  const supervisorId = String(formData.get("supervisor_id") ?? "");
   const displayName = String(formData.get("display_name") ?? "").trim();
   const phoneNumber = String(formData.get("phone_number") ?? "").trim();
   const phoneNumberId = String(formData.get("phone_number_id") ?? "").trim();
   const wabaId = String(formData.get("waba_id") ?? "").trim();
 
-  if (!clientId || !displayName || !phoneNumber || !phoneNumberId || !wabaId) {
-    return { error: "Pick a client for this number." };
+  if (!supervisorId || !displayName || !phoneNumber || !phoneNumberId || !wabaId) {
+    return { error: "Pick a supervisor for this number." };
   }
 
   const { data: conn } = await supabase
@@ -197,7 +197,7 @@ export async function addDiscoveredAccountAction(
   const { data, error } = await supabase
     .from("whatsapp_accounts")
     .insert({
-      client_id: clientId,
+      supervisor_id: supervisorId,
       display_name: displayName,
       phone_number: phoneNumber,
       phone_number_id: phoneNumberId,
@@ -220,7 +220,6 @@ export async function addDiscoveredAccountAction(
     action: "whatsapp_account.connect",
     resourceType: "whatsapp_account",
     resourceId: data.id,
-    clientId,
     newValue: {
       display_name: displayName,
       phone_number: phoneNumber,
