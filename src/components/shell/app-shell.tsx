@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { logout } from "@/lib/auth/actions";
 import type { CurrentUser } from "@/lib/auth/session";
 import { RealtimeRefresher } from "@/components/realtime-refresher";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 export type NavItem = { label: string; href: string };
 
@@ -158,6 +159,7 @@ export function AppShell({
           >
             Change password
           </Link>
+          <ThemeToggle className="w-full" />
           <form action={logout}>
             <button
               type="submit"

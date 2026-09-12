@@ -1,8 +1,31 @@
 @import "tailwindcss";
 
+/* Every `dark:` utility across the app now responds to a `.dark` class on
+   <html> instead of the OS's prefers-color-scheme — this is what lets the
+   in-app Light/Dark/System switcher (ThemeToggle) actually override the
+   system setting. "System" mode just means no .light/.dark class is
+   present, so the plain @media query further below still applies. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
+}
+
+/* Explicit dark override — wins regardless of the OS setting. */
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+}
+
+/* System mode (no explicit choice made yet): follow the OS, same as
+   before the toggle existed. An explicit .light class needs no rule here
+   since :root's own light values already are the default. */
+@media (prefers-color-scheme: dark) {
+  :root:not(.light):not(.dark) {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
 }
 
 @theme inline {
@@ -84,13 +107,6 @@
   animation: live-pulse 2s ease-in-out infinite;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
@@ -99,7 +115,10 @@ body {
 
 /* Data-viz palette (dataviz skill reference instance) — scope any chart in
    `.viz-root`, reference roles by CSS var. Categorical order is fixed;
-   never cycle or reassign a slot to a different series. */
+   never cycle or reassign a slot to a different series. Light values are
+   the default; the system-preference and explicit-.dark blocks below both
+   override to the same dark set, same three-state logic as the page
+   background above. */
 .viz-root {
   color-scheme: light;
   --viz-surface: #fcfcfb;
@@ -122,7 +141,7 @@ body {
   --viz-critical: #d03b3b;
 }
 @media (prefers-color-scheme: dark) {
-  .viz-root {
+  :root:not(.light):not(.dark) .viz-root {
     color-scheme: dark;
     --viz-surface: #1a1a19;
     --viz-text-primary: #ffffff;
@@ -143,4 +162,25 @@ body {
     --viz-serious: #ec835a;
     --viz-critical: #d03b3b;
   }
+}
+.dark .viz-root {
+  color-scheme: dark;
+  --viz-surface: #1a1a19;
+  --viz-text-primary: #ffffff;
+  --viz-text-secondary: #c3c2b7;
+  --viz-text-muted: #898781;
+  --viz-grid: #2c2c2a;
+  --viz-axis: #383835;
+  --viz-series-1: #3987e5;
+  --viz-series-2: #d95926;
+  --viz-series-3: #199e70;
+  --viz-series-4: #c98500;
+  --viz-series-5: #d55181;
+  --viz-series-6: #008300;
+  --viz-series-7: #9085e9;
+  --viz-series-8: #e66767;
+  --viz-good: #0ca30c;
+  --viz-warning: #fab219;
+  --viz-serious: #ec835a;
+  --viz-critical: #d03b3b;
 }
