@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 type Theme = "system" | "light" | "dark";
 const OPTIONS: { value: Theme; label: string }[] = [
-  { value: "system", label: "System" },
+  { value: "system", label: "Auto" },
   { value: "light", label: "Light" },
   { value: "dark", label: "Dark" },
 ];
