@@ -94,8 +94,8 @@ export function AppShell({
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-64 -translate-x-full flex-col border-r border-zinc-200 bg-white transition-transform duration-200 dark:border-zinc-800 dark:bg-zinc-900 md:static md:w-60 md:translate-x-0 ${
-          mobileOpen ? "translate-x-0" : ""
+        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-zinc-200 bg-white transition-transform duration-200 dark:border-zinc-800 dark:bg-zinc-900 md:static md:w-60 md:translate-x-0 ${
+          mobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         <div className="flex items-center gap-2 px-5 py-5">
