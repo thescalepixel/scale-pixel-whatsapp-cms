@@ -26,6 +26,62 @@
   --color-brand-800: #0a614a;
   --color-brand-900: #0a503e;
   --color-brand-950: #042e24;
+
+  /* Motion tokens — tied to real events (a page loading, a new message
+     landing via Realtime, a task waiting for attention), not decoration.
+     Tailwind v4 turns each `--animate-*` entry here into an `animate-*`
+     utility automatically. */
+  --animate-fade-in: fade-in 0.35s ease-out both;
+  --animate-slide-up: slide-up 0.3s ease-out both;
+  --animate-pop-in: pop-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* A small pulsing dot for "this is live" indicators (connected WhatsApp
+   accounts, active conversations) — a soft breathing glow, not a hard
+   blink, so it reads as calm/ambient rather than alarming. */
+@keyframes live-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--live-dot-color, var(--color-brand-500)) 55%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 4px color-mix(in oklab, var(--live-dot-color, var(--color-brand-500)) 0%, transparent);
+  }
+}
+
+.live-dot {
+  animation: live-pulse 2s ease-in-out infinite;
 }
 
 @media (prefers-color-scheme: dark) {

@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
+import { LiveDot } from "@/components/ui/live-dot";
 import {
   disconnectAccountAction,
   assignEmployeeToAccountFormAction,
@@ -44,6 +45,7 @@ export default async function WhatsAppAccountDetailPage({ params }: { params: Pr
         description={`${account.phone_number} · ${supervisor?.full_name ?? "—"}`}
         actions={
           <div className="flex items-center gap-2">
+            {account.status === "connected" && <LiveDot />}
             <Badge tone={account.status}>{account.status}</Badge>
             {account.status === "connected" && (
               <form action={disconnectAccountAction.bind(null, id)}>

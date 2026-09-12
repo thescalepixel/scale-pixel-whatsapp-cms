@@ -36,20 +36,22 @@ export default async function EmployeeDashboardPage() {
     <>
       <PageHeader title="Dashboard" description="Your workload today." />
       <div className="grid grid-cols-1 gap-4 p-8 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="My active conversations" value={active ?? 0} href="/employee/conversations" />
+        <StatCard label="My active conversations" value={active ?? 0} href="/employee/conversations" delayMs={0} />
         <StatCard
           label="My pending conversations"
           value={pending ?? 0}
           tone="warning"
           href="/employee/conversations?status=pending"
+          delayMs={30}
         />
         <StatCard
           label="My resolved conversations"
           value={resolved ?? 0}
           tone="success"
           href="/employee/conversations?status=resolved"
+          delayMs={60}
         />
-        <StatCard label="Unassigned queue" value={unassignedQueue ?? 0} href="/employee/queue" />
+        <StatCard label="Unassigned queue" value={unassignedQueue ?? 0} href="/employee/queue" delayMs={90} />
       </div>
       <div className="px-8 pb-8">
         <div className="rounded-lg border border-dashed border-zinc-300 bg-white p-6 text-sm text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400">

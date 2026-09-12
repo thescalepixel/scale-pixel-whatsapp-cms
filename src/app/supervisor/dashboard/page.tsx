@@ -21,24 +21,33 @@ export default async function SupervisorDashboardPage() {
     <>
       <PageHeader title="Dashboard" description="Your team and WhatsApp accounts." />
       <div className="grid grid-cols-1 gap-4 p-8 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Team members" value={teamSize ?? 0} href="/supervisor/team" />
-        <StatCard label="Online employees" value={onlineEmployees ?? 0} tone="success" href="/supervisor/team" />
+        <StatCard label="Team members" value={teamSize ?? 0} href="/supervisor/team" delayMs={0} />
+        <StatCard
+          label="Online employees"
+          value={onlineEmployees ?? 0}
+          tone="success"
+          href="/supervisor/team"
+          delayMs={30}
+        />
         <StatCard
           label="Active conversations"
           value={activeConversations ?? 0}
           href="/supervisor/conversations?status=open"
+          delayMs={60}
         />
         <StatCard
           label="Unanswered conversations"
           value={unanswered ?? 0}
           tone={(unanswered ?? 0) > 0 ? "danger" : "default"}
           href="/supervisor/conversations?status=new"
+          delayMs={90}
         />
         <StatCard
           label="Pending conversations"
           value={pending ?? 0}
           tone="warning"
           href="/supervisor/conversations?status=pending"
+          delayMs={120}
         />
       </div>
       <div className="px-8 pb-8">

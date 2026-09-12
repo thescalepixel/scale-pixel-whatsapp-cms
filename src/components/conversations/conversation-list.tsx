@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
+import { LiveDot } from "@/components/ui/live-dot";
 import type { ConversationListRow } from "@/lib/conversations/types";
 import { getResponseThresholdsMap, thresholdsFor, computeResponseIndicator } from "@/lib/response-time";
 import { RealtimeRefresher } from "@/components/realtime-refresher";
@@ -66,7 +67,7 @@ export async function ConversationList({
           </tr>
         </thead>
         <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
-          {conversations.map((c) => {
+          {conversations.map((c, i) => {
             const showIndicator = c.awaiting_response && c.status !== "resolved" && c.last_message_at;
             const indicator = showIndicator
               ? INDICATOR_STYLE[
@@ -74,7 +75,11 @@ export async function ConversationList({
                 ]
               : null;
             return (
-            <tr key={c.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+            <tr
+              key={c.id}
+              className="animate-slide-up hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+              style={{ animationDelay: `${Math.min(i, 12) * 25}ms` }}
+            >
               <td className="px-4 py-3">
                 <Link href={`${basePath}/${c.id}`} className="block">
                   <span className="font-medium text-zinc-900 hover:underline dark:text-zinc-50">
@@ -95,7 +100,10 @@ export async function ConversationList({
                 {c.assigned_employee?.full_name ?? <span className="italic text-zinc-400">Unassigned</span>}
               </td>
               <td className="px-4 py-3">
-                <Badge tone={c.status}>{c.status}</Badge>
+                <div className="flex items-center gap-1.5">
+                  {c.status === "open" && <LiveDot />}
+                  <Badge tone={c.status}>{c.status}</Badge>
+                </div>
               </td>
               <td className="px-4 py-3">
                 <Badge tone={c.priority}>{c.priority}</Badge>

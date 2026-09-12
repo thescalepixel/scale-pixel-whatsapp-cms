@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
+import { LiveDot } from "@/components/ui/live-dot";
 
 export default async function AdminWhatsAppAccountsPage() {
   const supabase = await createClient();
@@ -60,6 +61,7 @@ export default async function AdminWhatsAppAccountsPage() {
                     <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400">{a.phone_number}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1.5">
+                        {a.status === "connected" && <LiveDot />}
                         <Badge tone={a.status}>{a.status}</Badge>
                         {a.connected_via === "meta_sync" && (
                           <span className="text-xs text-zinc-400" title="Added via Meta discovery">

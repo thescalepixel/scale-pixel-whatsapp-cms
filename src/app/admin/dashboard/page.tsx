@@ -49,45 +49,56 @@ export default async function AdminDashboardPage() {
         description="Platform-wide visibility across every supervisor's team."
       />
       <div className="grid grid-cols-1 gap-4 p-8 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Total supervisors" value={totalSupervisors} href="/admin/users?role=supervisor" />
+        <StatCard label="Total supervisors" value={totalSupervisors} href="/admin/users?role=supervisor" delayMs={0} />
         <StatCard
           label="Active supervisors"
           value={activeSupervisors}
           tone="success"
           href="/admin/users?role=supervisor"
+          delayMs={30}
         />
-        <StatCard label="WhatsApp accounts" value={totalWhatsapp} href="/admin/whatsapp-accounts" />
+        <StatCard label="WhatsApp accounts" value={totalWhatsapp} href="/admin/whatsapp-accounts" delayMs={60} />
         <StatCard
           label="Connected accounts"
           value={connectedWhatsapp}
           tone="success"
           href="/admin/whatsapp-accounts"
+          delayMs={90}
         />
-        <StatCard label="Total employees" value={totalEmployees} href="/admin/users?role=employee" />
+        <StatCard label="Total employees" value={totalEmployees} href="/admin/users?role=employee" delayMs={120} />
         <StatCard
           label="Online employees"
           value={onlineEmployees}
           tone="success"
           href="/admin/users?role=employee"
+          delayMs={150}
         />
-        <StatCard label="Active conversations" value={activeConversations} href="/admin/conversations?status=open" />
+        <StatCard
+          label="Active conversations"
+          value={activeConversations}
+          href="/admin/conversations?status=open"
+          delayMs={180}
+        />
         <StatCard
           label="Unanswered conversations"
           value={unansweredConversations}
           tone={unansweredConversations > 0 ? "danger" : "default"}
           href="/admin/conversations?status=new"
+          delayMs={210}
         />
         <StatCard
           label="Pending conversations"
           value={pendingConversations}
           tone="warning"
           href="/admin/conversations?status=pending"
+          delayMs={240}
         />
         <StatCard
           label="Resolved conversations"
           value={resolvedConversations}
           tone="success"
           href="/admin/conversations?status=resolved"
+          delayMs={270}
         />
       </div>
 

@@ -60,7 +60,10 @@ export function AppShell({
               >
                 {item.label}
                 {item.label === "Notifications" && unreadNotifications > 0 && (
-                  <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-600 px-1.5 text-xs font-semibold text-white">
+                  <span
+                    key={unreadNotifications}
+                    className="animate-pop-in flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-600 px-1.5 text-xs font-semibold text-white shadow-sm shadow-brand-900/30"
+                  >
                     {unreadNotifications > 99 ? "99+" : unreadNotifications}
                   </span>
                 )}
@@ -93,7 +96,9 @@ export function AppShell({
         </div>
       </aside>
 
-      <main className="flex-1 overflow-x-hidden">{children}</main>
+      <main key={pathname} className="animate-fade-in flex-1 overflow-x-hidden">
+        {children}
+      </main>
     </div>
   );
 }

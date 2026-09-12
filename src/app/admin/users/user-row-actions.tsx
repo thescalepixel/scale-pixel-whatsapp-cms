@@ -144,8 +144,8 @@ export function UserRowActions({
       >
         Permissions
       </Link>
-      {message && <span className="text-brand-600 dark:text-brand-400">{message}</span>}
-      {error && <span className="text-red-600 dark:text-red-400">{error}</span>}
+      {message && <span className="animate-slide-up text-brand-600 dark:text-brand-400">{message}</span>}
+      {error && <span className="animate-slide-up text-red-600 dark:text-red-400">{error}</span>}
     </div>
   );
 }

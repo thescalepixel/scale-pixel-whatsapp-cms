@@ -17,7 +17,7 @@ export function NewUserForm({
 
   if (state.success) {
     return (
-      <div className="space-y-4">
+      <div className="animate-slide-up space-y-4">
         <div className="rounded-md bg-brand-50 px-4 py-3 text-sm text-brand-800 dark:bg-brand-950 dark:text-brand-300">
           Account created. Share these sign-in details with them yourself (WhatsApp, in person,
           however works) — they can go to{" "}

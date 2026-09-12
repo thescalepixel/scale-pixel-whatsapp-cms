@@ -10,7 +10,7 @@ export function MessageThread({ messages }: { messages: MessageRow[] }) {
       {messages.map((m) => {
         const isOut = m.direction === "out";
         return (
-          <div key={m.id} className={`flex ${isOut ? "justify-end" : "justify-start"}`}>
+          <div key={m.id} className={`animate-slide-up flex ${isOut ? "justify-end" : "justify-start"}`}>
             <div
               className={`max-w-[75%] rounded-2xl px-4 py-2 text-sm ${
                 isOut
