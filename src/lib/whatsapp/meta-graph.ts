@@ -82,3 +82,44 @@ export async function subscribeAppToWaba(wabaId: string, token: string): Promise
     return { ok: false, error: "Network error subscribing the webhook." };
   }
 }
+
+export type BizAppStatus = { is_on_biz_app?: boolean; platform_type?: string };
+
+/**
+ * Coexistence-only check: whether a phone number is (still) linked to the
+ * WhatsApp Business App on someone's phone, and which platform manages it
+ * (`CLOUD_API`, `ON_PREMISE`, or a business-app-managed value). Used right
+ * after the Embedded Signup "connect your existing app number" flow
+ * completes, to confirm the pairing actually took before we mark it done.
+ */
+export async function getPhoneNumberBizAppStatus(phoneNumberId: string, token: string) {
+  return graphGet<BizAppStatus>(phoneNumberId, token, { fields: "is_on_biz_app,platform_type" });
+}
+
+/**
+ * Coexistence-only: pulls the existing WhatsApp Business App's contacts and
+ * message history into the Cloud API side. Meta requires both sync_types be
+ * called within 24 hours of the Embedded Signup "connect your existing app
+ * number" flow finishing, or the business has to redo that flow.
+ */
+export async function syncSmbAppData(
+  phoneNumberId: string,
+  token: string,
+  syncType: "smb_app_state_sync" | "history",
+): Promise<GraphResult<{ success: boolean }>> {
+  const url = `https://graph.facebook.com/${GRAPH_API_VERSION}/${phoneNumberId}/smb_app_data`;
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ messaging_product: "whatsapp", sync_type: syncType }),
+    });
+    const json = await res.json();
+    if (!res.ok) {
+      return { ok: false, error: json?.error?.message ?? `Meta API error (${res.status})` };
+    }
+    return { ok: true, data: json };
+  } catch {
+    return { ok: false, error: "Network error syncing WhatsApp Business App data." };
+  }
+}

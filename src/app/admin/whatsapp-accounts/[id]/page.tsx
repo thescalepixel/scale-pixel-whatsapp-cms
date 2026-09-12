@@ -8,6 +8,7 @@ import {
   unassignEmployeeFromAccountAction,
 } from "../actions";
 import { RotateTokenForm } from "./rotate-token-form";
+import { CoexistenceConnectButton } from "./coexistence-connect-button";
 
 export default async function WhatsAppAccountDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -74,6 +75,16 @@ export default async function WhatsAppAccountDetailPage({ params }: { params: Pr
               {account.status === "connected" ? "Rotate access token" : "Connect with an access token"}
             </h2>
             <RotateTokenForm accountId={id} />
+          </div>
+
+          <div className="rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+            <h2 className="mb-1 text-sm font-semibold text-zinc-900 dark:text-zinc-50">WhatsApp Business App pairing</h2>
+            <p className="mb-3 text-sm text-zinc-500 dark:text-zinc-400">
+              Only needed if this number is still active in someone&apos;s WhatsApp Business App on their phone
+              (Coexistence). Metadata being connected above isn&apos;t enough on its own — Meta requires this separate
+              phone-side pairing step before messages sent to the app also reach this CMS.
+            </p>
+            <CoexistenceConnectButton accountId={id} wabaId={account.waba_id} phoneNumberId={account.phone_number_id} />
           </div>
         </section>
 
