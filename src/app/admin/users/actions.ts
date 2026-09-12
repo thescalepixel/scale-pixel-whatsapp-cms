@@ -1,14 +1,16 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { writeAudit } from "@/lib/audit";
 import type { Enums } from "@/lib/supabase/database.types";
 
-export type FormState = { error: string | null };
+export type FormState = {
+  error: string | null;
+  success?: { email: string; password: string };
+};
 
 export async function createUserAction(
   _prevState: FormState,
@@ -21,6 +23,8 @@ export async function createUserAction(
   const phone = String(formData.get("phone") ?? "").trim() || null;
   const role = String(formData.get("role") ?? "") as Enums<"user_role">;
   const supervisorId = String(formData.get("supervisor_id") ?? "") || null;
+  const password = String(formData.get("password") ?? "");
+  const confirmPassword = String(formData.get("confirm_password") ?? "");
 
   if (!fullName || !email || !role) {
     return { error: "Full name, email and role are required." };
@@ -28,16 +32,21 @@ export async function createUserAction(
   if (role === "employee" && !supervisorId) {
     return { error: "Select which supervisor this employee reports to." };
   }
+  if (password.length < 8) {
+    return { error: "Password must be at least 8 characters." };
+  }
+  if (password !== confirmPassword) {
+    return { error: "Passwords don't match." };
+  }
 
   const admin = createAdminClient();
 
-  // 1. Create the auth identity. A temporary password is set; the account
-  // is then immediately sent a password-reset email so the admin never
-  // learns or transmits the real credential.
-  const tempPassword = crypto.randomUUID();
+  // 1. Create the auth identity with the password the admin chose — no
+  // email dependency to get a first login working. The account holder can
+  // change it themselves any time from Change Password once signed in.
   const { data: authUser, error: authError } = await admin.auth.admin.createUser({
     email,
-    password: tempPassword,
+    password,
     email_confirm: true,
   });
   if (authError || !authUser.user) {
@@ -63,12 +72,6 @@ export async function createUserAction(
     return { error: "Couldn't create the user profile. Try again." };
   }
 
-  // 3. Send the account's first-login password link.
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-  await admin.auth.resetPasswordForEmail(email, {
-    redirectTo: `${siteUrl}/auth/callback?next=/reset-password`,
-  });
-
   await writeAudit({
     action: "user.create",
     resourceType: "user",
@@ -77,7 +80,7 @@ export async function createUserAction(
   });
 
   revalidatePath("/admin/users");
-  redirect("/admin/users");
+  return { error: null, success: { email, password } };
 }
 
 export async function setUserStatusAction(userId: string, status: Enums<"user_status">) {
