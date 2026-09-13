@@ -29,7 +29,12 @@ export async function updatePassword(
 
   const { error } = await supabase.auth.updateUser({ password });
   if (error) {
-    return { error: "Couldn't update your password. Try again." };
+    // GoTrue's own messages here are already specific and safe to show
+    // (e.g. "New password should be different from the old password.") —
+    // a generic "try again" hid the actual, actionable reason from the
+    // user. Found live: a supervisor re-entered their current password
+    // and had no way to tell why it was rejected.
+    return { error: error.message || "Couldn't update your password. Try again." };
   }
 
   redirect("/");
