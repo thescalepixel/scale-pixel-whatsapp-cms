@@ -8,6 +8,7 @@ import { writeAudit } from "@/lib/audit";
 import { sendWhatsAppTextMessage, uploadMediaToWhatsApp, sendWhatsAppMediaMessage } from "@/lib/whatsapp/cloud-api";
 import { decryptToken } from "@/lib/whatsapp/crypto";
 import { extensionForMime, whatsappMediaTypeFromMime, uploadMediaToStorage } from "@/lib/whatsapp/media-storage";
+import { remuxToOggOpus } from "@/lib/whatsapp/audio-remux";
 import type { Enums, TablesUpdate } from "@/lib/supabase/database.types";
 
 /**
@@ -132,7 +133,7 @@ export async function sendMediaMessageAction(conversationId: string, formData: F
     return { error: "No file selected." };
   }
 
-  const mimeType = file.type || "application/octet-stream";
+  let mimeType = file.type || "application/octet-stream";
   const mediaType = whatsappMediaTypeFromMime(mimeType);
   const maxBytes = MAX_BYTES_BY_KIND[mediaType];
   if (file.size > maxBytes) {
@@ -141,7 +142,23 @@ export async function sendMediaMessageAction(conversationId: string, formData: F
 
   const supabase = await createClient();
   const admin = createAdminClient();
-  const bytes = await file.arrayBuffer();
+  let bytes: ArrayBuffer = await file.arrayBuffer();
+
+  // WhatsApp only accepts audio/ogg (Opus) for voice notes — every
+  // Chromium browser's MediaRecorder can only produce Opus-in-WebM, never
+  // Opus-in-Ogg (only Firefox can record straight to Ogg). Without this,
+  // a voice note recorded in Chrome/Edge uploads fine to our own Storage
+  // but Meta's /media endpoint rejects it, and the message silently ends
+  // up "failed" with no indication why. The Opus audio itself is already
+  // WhatsApp-compatible; this only rewraps it into an Ogg container.
+  if (mediaType === "audio" && !mimeType.startsWith("audio/ogg")) {
+    const remuxed = await remuxToOggOpus(bytes);
+    if (!remuxed.ok) {
+      return { error: "Couldn't process this voice recording. Try again." };
+    }
+    bytes = remuxed.bytes;
+    mimeType = "audio/ogg";
+  }
 
   // Store our own permanent copy first — this is what the thread actually
   // renders from, regardless of whether the live WhatsApp send below
