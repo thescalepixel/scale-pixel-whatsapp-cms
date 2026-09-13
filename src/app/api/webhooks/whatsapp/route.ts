@@ -20,6 +20,11 @@ export async function GET(request: NextRequest) {
 }
 
 type InboundMedia = { id: string; mime_type: string; caption?: string; filename?: string };
+type StatusUpdate = {
+  id: string;
+  status: "sent" | "delivered" | "read" | "failed";
+  timestamp: string;
+};
 type WebhookValue = {
   metadata?: { phone_number_id?: string };
   contacts?: { profile?: { name?: string }; wa_id?: string }[];
@@ -34,6 +39,12 @@ type WebhookValue = {
     audio?: InboundMedia;
     document?: InboundMedia;
   }[];
+  // Delivery receipts for messages WE sent — arrives as a sibling of
+  // `messages` under the same "messages" webhook field subscription, not a
+  // separate field. Meta can also re-deliver an older status after a newer
+  // one (retries, out-of-order delivery), so this is applied as a
+  // best-effort "most recent write wins" update, not a strict progression.
+  statuses?: StatusUpdate[];
 };
 
 export async function POST(request: NextRequest) {
@@ -69,7 +80,8 @@ export async function POST(request: NextRequest) {
       const value = change.value;
       const phoneNumberId = value?.metadata?.phone_number_id;
       const messages = value?.messages;
-      if (!phoneNumberId || !messages?.length) continue;
+      const statuses = value?.statuses;
+      if (!phoneNumberId || (!messages?.length && !statuses?.length)) continue;
 
       const { data: account } = await admin
         .from("whatsapp_accounts")
@@ -78,7 +90,18 @@ export async function POST(request: NextRequest) {
         .single();
       if (!account || account.status !== "connected") continue;
 
-      for (const msg of messages) {
+      // Delivery receipts for messages we sent (sent/delivered/read/failed).
+      // Each one is looked up by the WhatsApp message id we stored when we
+      // sent it — no conversation/customer lookup needed here.
+      for (const s of statuses ?? []) {
+        await admin
+          .from("messages")
+          .update({ status: s.status })
+          .eq("whatsapp_message_id", s.id)
+          .eq("direction", "out");
+      }
+
+      for (const msg of messages ?? []) {
         const mediaTypes = ["image", "video", "audio", "document"] as const;
         const mediaType = mediaTypes.find((t) => msg.type === t);
         const inboundMedia = mediaType ? msg[mediaType] : undefined;
