@@ -91,6 +91,12 @@ export async function sendMessageAction(conversationId: string, formData: FormDa
       whatsappMessageId = result.whatsappMessageId;
     } else {
       status = "failed";
+      // Without this, a failed send is only ever visible as a "failed"
+      // badge in the UI — the actual reason Meta rejected it (bad token,
+      // rate limit, transient network error, closed 24h window, ...) was
+      // silently discarded. Cheap to log, and the only way to diagnose a
+      // failure after the fact.
+      console.error("sendWhatsAppTextMessage failed", { conversationId, error: result.error });
     }
   }
 
@@ -207,9 +213,11 @@ export async function sendMediaMessageAction(conversationId: string, formData: F
         whatsappMessageId = sendRes.whatsappMessageId;
       } else {
         status = "failed";
+        console.error("sendWhatsAppMediaMessage failed", { conversationId, mediaType, mimeType, error: sendRes.error });
       }
     } else {
       status = "failed";
+      console.error("uploadMediaToWhatsApp failed", { conversationId, mediaType, mimeType, error: uploadToMeta.error });
     }
   }
 
