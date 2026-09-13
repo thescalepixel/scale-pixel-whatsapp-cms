@@ -127,12 +127,17 @@ export async function POST(request: NextRequest) {
           await admin.from("customers").update({ first_conversation_at: new Date().toISOString() }).eq("id", customer.id);
         }
 
+        // Always reuse the customer's existing conversation, resolved or
+        // not — app.handle_inbound_message() (fired by the insert below)
+        // is what actually flips a resolved conversation back to "open".
+        // Excluding resolved rows here would defeat that: it would just
+        // fork a second, disconnected conversation instead of reopening
+        // the first, which is exactly the bug this comment used to hide.
         let { data: conversation } = await admin
           .from("conversations")
           .select("id")
           .eq("whatsapp_account_id", account.id)
           .eq("customer_id", customer.id)
-          .neq("status", "resolved")
           .order("created_at", { ascending: false })
           .limit(1)
           .maybeSingle();
