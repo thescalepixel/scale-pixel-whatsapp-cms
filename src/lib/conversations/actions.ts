@@ -42,6 +42,10 @@ async function afterOutboundMessage(conversationId: string) {
     .eq("id", conversationId)
     .single();
 
+  // A reply means it's now the customer's turn to respond — "pending" is
+  // exactly that state — except a resolved conversation stays resolved on
+  // its own; only a new inbound message (handle_inbound_message) reopens
+  // one of those.
   await supabase
     .from("conversations")
     .update({
@@ -49,7 +53,7 @@ async function afterOutboundMessage(conversationId: string) {
       unread_count: 0,
       awaiting_response: false,
       first_response_at: conv?.first_response_at ?? new Date().toISOString(),
-      status: conv?.status === "new" ? "open" : conv?.status,
+      status: conv?.status === "resolved" ? "resolved" : "pending",
     })
     .eq("id", conversationId);
 
