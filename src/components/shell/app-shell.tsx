@@ -137,9 +137,11 @@ export function AppShell({
                 // requests on the page (900ms-1.8s each), competing with
                 // and delaying the actual page's own load. Nobody's
                 // visiting all ~10 pages in a sitting, so it wasn't
-                // earning its keep — prefetch on hover/focus instead via
-                // the default "intent"-less false, which still prefetches
-                // right when a link is actually clicked.
+                // earning its keep. In the App Router, prefetch={false}
+                // turns prefetching off entirely (unlike the Pages Router,
+                // it does NOT still prefetch on hover) — clicking a link
+                // now fetches at click time instead of instantly, a fair
+                // trade for not competing with every page's own load.
                 prefetch={false}
                 className={`flex items-center justify-between rounded-md border-l-2 px-3 py-2 text-sm font-medium transition-colors ${
                   active
