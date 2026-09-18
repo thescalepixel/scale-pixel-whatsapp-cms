@@ -10,12 +10,22 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  /* Without this, native form controls (input/textarea/select) render
+     using the OS's own light/dark preference for their built-in text and
+     caret colors — regardless of the app's actual chosen theme below.
+     Picking "Light" here while the OS is set to dark left typed text
+     rendered in the OS's dark-mode (near-white) color on our light
+     background: invisible. Declaring the scheme explicitly per theme
+     state (same pattern .viz-root already uses) makes the browser follow
+     the app's theme instead of the OS's. */
+  color-scheme: light;
 }
 
 /* Explicit dark override — wins regardless of the OS setting. */
 .dark {
   --background: #0a0a0a;
   --foreground: #ededed;
+  color-scheme: dark;
 }
 
 /* System mode (no explicit choice made yet): follow the OS, same as
@@ -25,6 +35,7 @@
   :root:not(.light):not(.dark) {
     --background: #0a0a0a;
     --foreground: #ededed;
+    color-scheme: dark;
   }
 }
 
