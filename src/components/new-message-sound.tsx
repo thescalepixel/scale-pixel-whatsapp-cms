@@ -28,13 +28,21 @@ export function NewMessageSound({ userId }: { userId: string }) {
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "messages", filter: "direction=eq.in" },
         (payload) => {
+          // eslint-disable-next-line no-console -- temporary: diagnosing why the chime isn't firing in production
+          console.log("[new-message-sound] event received", payload);
           const conversationId = (payload.new as { conversation_id?: string } | null)?.conversation_id;
           // Already looking at this exact thread — no need to alert.
-          if (conversationId && pathnameRef.current?.includes(conversationId)) return;
+          if (conversationId && pathnameRef.current?.includes(conversationId)) {
+            console.log("[new-message-sound] skipped — already viewing this conversation");
+            return;
+          }
           playChime();
         },
       )
-      .subscribe();
+      .subscribe((status, err) => {
+        // eslint-disable-next-line no-console -- temporary: diagnosing why the chime isn't firing in production
+        console.log("[new-message-sound] subscribe status:", status, err);
+      });
 
     return () => {
       supabase.removeChannel(channel);
