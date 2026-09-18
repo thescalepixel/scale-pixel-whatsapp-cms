@@ -45,7 +45,7 @@ export function ConversationSidebar({
           Status
         </label>
         <select
-          defaultValue={status}
+          value={status}
           disabled={!canUpdateStatus || pending}
           onChange={(e) =>
             startTransition(() => updateStatusAction(conversationId, e.target.value as Enums<"conversation_status">))
@@ -65,7 +65,7 @@ export function ConversationSidebar({
           Priority
         </label>
         <select
-          defaultValue={priority}
+          value={priority}
           disabled={!canUpdateStatus || pending}
           onChange={(e) =>
             startTransition(() => updatePriorityAction(conversationId, e.target.value as Enums<"conversation_priority">))
@@ -86,7 +86,7 @@ export function ConversationSidebar({
             Assigned employee
           </label>
           <select
-            defaultValue={assignedEmployeeId ?? ""}
+            value={assignedEmployeeId ?? ""}
             disabled={pending}
             onChange={(e) =>
               startTransition(() => assignConversationAction(conversationId, e.target.value || null))
