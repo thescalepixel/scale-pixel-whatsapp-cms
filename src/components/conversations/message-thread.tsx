@@ -41,11 +41,31 @@ function MediaContent({ m }: { m: MessageRow }) {
 export function MessageThread({ messages }: { messages: MessageRow[] }) {
   // Opening a conversation (or a new message arriving) should land on the
   // latest message, not wherever the scroll container defaults to (its
-  // top — the oldest message) — this ref+effect jumps to the bottom on
-  // every mount and every change to the message list.
-  const bottomRef = useRef<HTMLDivElement>(null);
+  // top — the oldest message). A single scroll-to-bottom on mount isn't
+  // enough: images and audio players in the thread finish loading (and
+  // grow the container) *after* that first paint, which silently pushes
+  // "bottom" back up mid-history. A ResizeObserver on the container keeps
+  // re-pinning to bottom for a couple seconds after each load/message
+  // change, which covers that settling window without hijacking scroll
+  // during normal reading later.
+  const containerRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ block: "end" });
+    const container = containerRef.current;
+    if (!container) return;
+
+    const scrollToBottom = () => {
+      container.scrollTop = container.scrollHeight;
+    };
+    scrollToBottom();
+
+    const observer = new ResizeObserver(scrollToBottom);
+    observer.observe(container);
+    const stopWatching = setTimeout(() => observer.disconnect(), 2000);
+
+    return () => {
+      observer.disconnect();
+      clearTimeout(stopWatching);
+    };
   }, [messages]);
 
   if (messages.length === 0) {
@@ -53,7 +73,7 @@ export function MessageThread({ messages }: { messages: MessageRow[] }) {
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-6">
+    <div ref={containerRef} className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-6">
       {messages.map((m) => {
         const isOut = m.direction === "out";
         return (
@@ -79,7 +99,6 @@ export function MessageThread({ messages }: { messages: MessageRow[] }) {
           </div>
         );
       })}
-      <div ref={bottomRef} />
     </div>
   );
 }
