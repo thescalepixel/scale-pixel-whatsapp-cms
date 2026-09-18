@@ -125,17 +125,25 @@ export function MessageThread({
   // latest message, not wherever the scroll container defaults to (its
   // top — the oldest message). A single scroll-to-bottom on mount isn't
   // enough: images and audio players in the thread finish loading (and
-  // grow the container) *after* that first paint, which silently pushes
-  // "bottom" back up mid-history. A ResizeObserver on the container keeps
-  // re-pinning to bottom for a couple seconds after each load/message
-  // change, which covers that settling window without hijacking scroll
-  // during normal reading later.
+  // grow the *content*) after that first paint, which silently pushes
+  // "bottom" back up mid-history.
+  //
+  // The ResizeObserver has to watch `contentRef` (the message list), not
+  // `containerRef` (the scrollable viewport) — the viewport's own box size
+  // is fixed by the flex layout around it (`flex-1` + a calc()'d height
+  // from the parent), so it never resizes as children load inside it;
+  // observing it was a no-op that happened to go unnoticed with only a
+  // couple of early images in a short thread. The inner content div has no
+  // such constraint — its natural height grows with every image/audio
+  // element that finishes loading — which is what needs watching.
   const containerRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const [openForwardId, setOpenForwardId] = useState<string | null>(null);
 
   useEffect(() => {
     const container = containerRef.current;
-    if (!container) return;
+    const content = contentRef.current;
+    if (!container || !content) return;
 
     const scrollToBottom = () => {
       container.scrollTop = container.scrollHeight;
@@ -143,8 +151,8 @@ export function MessageThread({
     scrollToBottom();
 
     const observer = new ResizeObserver(scrollToBottom);
-    observer.observe(container);
-    const stopWatching = setTimeout(() => observer.disconnect(), 2000);
+    observer.observe(content);
+    const stopWatching = setTimeout(() => observer.disconnect(), 3000);
 
     return () => {
       observer.disconnect();
@@ -157,7 +165,8 @@ export function MessageThread({
   }
 
   return (
-    <div ref={containerRef} className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-6">
+    <div ref={containerRef} className="min-h-0 flex-1 overflow-y-auto p-6">
+      <div ref={contentRef} className="flex flex-col gap-3">
       {messages.map((m) => {
         const isOut = m.direction === "out";
         const forwardOpen = openForwardId === m.id;
@@ -201,6 +210,7 @@ export function MessageThread({
           </div>
         );
       })}
+      </div>
     </div>
   );
 }
