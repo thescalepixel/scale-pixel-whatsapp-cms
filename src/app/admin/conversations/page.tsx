@@ -6,10 +6,10 @@ import { listConversations } from "@/lib/conversations/queries";
 export default async function AdminConversationsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; priority?: string; q?: string }>;
+  searchParams: Promise<{ status?: string; priority?: string; q?: string; awaiting?: string }>;
 }) {
-  const { status, priority, q } = await searchParams;
-  const conversations = await listConversations({ status, priority, q });
+  const { status, priority, q, awaiting } = await searchParams;
+  const conversations = await listConversations({ status, priority, q, awaitingOnly: awaiting === "1" });
 
   return (
     <>

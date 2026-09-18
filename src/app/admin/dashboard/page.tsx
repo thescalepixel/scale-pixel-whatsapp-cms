@@ -41,7 +41,12 @@ export default async function AdminDashboardPage() {
     count(supabase, "conversations", { status: "resolved" }),
   ]);
 
-  const unansweredConversations = await count(supabase, "conversations", { status: "new" });
+  // "New" status only ever covered a conversation's very first, never-yet-
+  // touched message — a customer's reply to an already-open conversation
+  // never showed up anywhere on the dashboard. awaiting_response is set on
+  // every inbound message regardless of status and cleared on every reply,
+  // so it's the actual "we owe someone a response" signal.
+  const awaitingReply = await count(supabase, "conversations", { awaiting_response: true });
 
   return (
     <>
@@ -88,10 +93,10 @@ export default async function AdminDashboardPage() {
           delayMs={180}
         />
         <StatCard
-          label="Unanswered conversations"
-          value={unansweredConversations}
-          tone={unansweredConversations > 0 ? "danger" : "default"}
-          href="/admin/conversations?status=new"
+          label="Awaiting reply"
+          value={awaitingReply}
+          tone={awaitingReply > 0 ? "danger" : "default"}
+          href="/admin/conversations?awaiting=1"
           delayMs={210}
         />
         <StatCard

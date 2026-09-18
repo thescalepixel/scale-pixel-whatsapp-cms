@@ -17,6 +17,7 @@ export type ConversationFilters = {
   priority?: string;
   assignedOnly?: string; // employee id — filters to assigned_employee_id = this
   unassignedOnly?: boolean;
+  awaitingOnly?: boolean; // has an unreplied inbound message (awaiting_response = true), any status
   q?: string; // matches customer name, WhatsApp number, or message content
 };
 
@@ -58,6 +59,7 @@ export async function listConversations(filters: ConversationFilters = {}): Prom
   if (filters.priority) query = query.eq("priority", filters.priority as never);
   if (filters.assignedOnly) query = query.eq("assigned_employee_id", filters.assignedOnly);
   if (filters.unassignedOnly) query = query.is("assigned_employee_id", null);
+  if (filters.awaitingOnly) query = query.eq("awaiting_response", true);
   if (matchingIds) query = query.in("id", matchingIds);
 
   const { data, error } = await query;

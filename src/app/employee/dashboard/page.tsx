@@ -11,27 +11,36 @@ export default async function EmployeeDashboardPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const [{ count: active }, { count: pending }, { count: resolved }, { count: unassignedQueue }] = await Promise.all([
-    supabase
-      .from("conversations")
-      .select("*", { count: "exact", head: true })
-      .eq("assigned_employee_id", user!.id)
-      .in("status", ["new", "open"]),
-    supabase
-      .from("conversations")
-      .select("*", { count: "exact", head: true })
-      .eq("assigned_employee_id", user!.id)
-      .eq("status", "pending"),
-    supabase
-      .from("conversations")
-      .select("*", { count: "exact", head: true })
-      .eq("assigned_employee_id", user!.id)
-      .eq("status", "resolved"),
-    supabase
-      .from("conversations")
-      .select("*", { count: "exact", head: true })
-      .is("assigned_employee_id", null),
-  ]);
+  const [{ count: active }, { count: awaitingReply }, { count: pending }, { count: resolved }, { count: unassignedQueue }] =
+    await Promise.all([
+      supabase
+        .from("conversations")
+        .select("*", { count: "exact", head: true })
+        .eq("assigned_employee_id", user!.id)
+        .in("status", ["new", "open"]),
+      // awaiting_response is set on every inbound message regardless of
+      // status and cleared on every reply — this is what actually needs a
+      // reply from this employee right now, not just anything "active".
+      supabase
+        .from("conversations")
+        .select("*", { count: "exact", head: true })
+        .eq("assigned_employee_id", user!.id)
+        .eq("awaiting_response", true),
+      supabase
+        .from("conversations")
+        .select("*", { count: "exact", head: true })
+        .eq("assigned_employee_id", user!.id)
+        .eq("status", "pending"),
+      supabase
+        .from("conversations")
+        .select("*", { count: "exact", head: true })
+        .eq("assigned_employee_id", user!.id)
+        .eq("status", "resolved"),
+      supabase
+        .from("conversations")
+        .select("*", { count: "exact", head: true })
+        .is("assigned_employee_id", null),
+    ]);
 
   return (
     <>
@@ -39,6 +48,13 @@ export default async function EmployeeDashboardPage() {
       <PageHeader title="Dashboard" description="Your workload today." />
       <div className="grid grid-cols-1 gap-4 p-4 sm:p-8 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="My active conversations" value={active ?? 0} href="/employee/conversations" delayMs={0} />
+        <StatCard
+          label="Awaiting my reply"
+          value={awaitingReply ?? 0}
+          tone={(awaitingReply ?? 0) > 0 ? "danger" : "default"}
+          href="/employee/conversations?awaiting=1"
+          delayMs={15}
+        />
         <StatCard
           label="My pending conversations"
           value={pending ?? 0}

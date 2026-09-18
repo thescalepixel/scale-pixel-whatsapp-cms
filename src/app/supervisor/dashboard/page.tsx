@@ -9,12 +9,16 @@ import { RealtimeRefresher } from "@/components/realtime-refresher";
 export default async function SupervisorDashboardPage() {
   const supabase = await createClient();
 
-  const [{ count: teamSize }, { count: onlineEmployees }, { count: activeConversations }, { count: unanswered }, { count: pending }] =
+  const [{ count: teamSize }, { count: onlineEmployees }, { count: activeConversations }, { count: awaitingReply }, { count: pending }] =
     await Promise.all([
       supabase.from("users").select("*", { count: "exact", head: true }).eq("role", "employee"),
       supabase.from("users").select("*", { count: "exact", head: true }).eq("role", "employee").eq("is_online", true),
       supabase.from("conversations").select("*", { count: "exact", head: true }).eq("status", "open"),
-      supabase.from("conversations").select("*", { count: "exact", head: true }).eq("status", "new"),
+      // awaiting_response is set on every inbound message regardless of
+      // status and cleared on every reply — status='new' only ever covered
+      // a conversation's very first message, so a reply to an already-open
+      // conversation never surfaced here.
+      supabase.from("conversations").select("*", { count: "exact", head: true }).eq("awaiting_response", true),
       supabase.from("conversations").select("*", { count: "exact", head: true }).eq("status", "pending"),
     ]);
 
@@ -39,10 +43,10 @@ export default async function SupervisorDashboardPage() {
           delayMs={60}
         />
         <StatCard
-          label="Unanswered conversations"
-          value={unanswered ?? 0}
-          tone={(unanswered ?? 0) > 0 ? "danger" : "default"}
-          href="/supervisor/conversations?status=new"
+          label="Awaiting reply"
+          value={awaitingReply ?? 0}
+          tone={(awaitingReply ?? 0) > 0 ? "danger" : "default"}
+          href="/supervisor/conversations?awaiting=1"
           delayMs={90}
         />
         <StatCard
