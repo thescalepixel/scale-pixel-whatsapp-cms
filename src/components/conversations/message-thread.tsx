@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useRef } from "react";
 import type { MessageRow } from "@/lib/conversations/types";
 import { formatDateTime } from "@/lib/format-datetime";
 
@@ -36,6 +39,15 @@ function MediaContent({ m }: { m: MessageRow }) {
 }
 
 export function MessageThread({ messages }: { messages: MessageRow[] }) {
+  // Opening a conversation (or a new message arriving) should land on the
+  // latest message, not wherever the scroll container defaults to (its
+  // top — the oldest message) — this ref+effect jumps to the bottom on
+  // every mount and every change to the message list.
+  const bottomRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ block: "end" });
+  }, [messages]);
+
   if (messages.length === 0) {
     return <p className="p-6 text-center text-sm text-zinc-500 dark:text-zinc-400">No messages yet.</p>;
   }
@@ -67,6 +79,7 @@ export function MessageThread({ messages }: { messages: MessageRow[] }) {
           </div>
         );
       })}
+      <div ref={bottomRef} />
     </div>
   );
 }
