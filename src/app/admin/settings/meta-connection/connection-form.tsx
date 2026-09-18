@@ -3,6 +3,7 @@
 import { useActionState, useTransition } from "react";
 import { saveMetaConnectionAction, disconnectMetaConnectionAction, type ConnectionFormState } from "./actions";
 import type { MetaConnectionStatus } from "@/lib/whatsapp/meta-connection";
+import { formatDateTime } from "@/lib/format-datetime";
 
 const initialState: ConnectionFormState = { error: null };
 
@@ -23,12 +24,12 @@ export function ConnectionForm({ status }: { status: MetaConnectionStatus | null
         <dl className="grid grid-cols-2 gap-2 text-sm">
           <div>
             <dt className="text-zinc-500 dark:text-zinc-400">Connected</dt>
-            <dd className="text-zinc-900 dark:text-zinc-50">{new Date(status.connectedAt).toLocaleString()}</dd>
+            <dd className="text-zinc-900 dark:text-zinc-50">{formatDateTime(status.connectedAt)}</dd>
           </div>
           <div>
             <dt className="text-zinc-500 dark:text-zinc-400">Last synced</dt>
             <dd className="text-zinc-900 dark:text-zinc-50">
-              {status.lastSyncedAt ? new Date(status.lastSyncedAt).toLocaleString() : "Never — click Discover below"}
+              {status.lastSyncedAt ? formatDateTime(status.lastSyncedAt) : "Never — click Discover below"}
             </dd>
           </div>
         </dl>

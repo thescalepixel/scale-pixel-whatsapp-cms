@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useTransition } from "react";
 import { markNotificationReadAction, markAllNotificationsReadAction } from "@/lib/notifications/actions";
 import type { Json } from "@/lib/supabase/database.types";
+import { formatDateTime } from "@/lib/format-datetime";
 
 type Notification = {
   id: string;
@@ -49,7 +50,7 @@ export function NotificationsList({ notifications }: { notifications: Notificati
               <div className={`flex-1 ${n.read_at ? "pl-5" : ""}`}>
                 <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50">{n.title}</p>
                 {n.body && <p className="mt-0.5 text-sm text-zinc-600 dark:text-zinc-400">{n.body}</p>}
-                <p className="mt-1 text-xs text-zinc-400">{new Date(n.created_at).toLocaleString()}</p>
+                <p className="mt-1 text-xs text-zinc-400">{formatDateTime(n.created_at)}</p>
               </div>
               {!n.read_at && (
                 <button

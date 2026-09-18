@@ -1,4 +1,5 @@
 import type { MessageRow } from "@/lib/conversations/types";
+import { formatDateTime } from "@/lib/format-datetime";
 
 function MediaContent({ m }: { m: MessageRow }) {
   if (!m.media_type) return null;
@@ -40,7 +41,7 @@ export function MessageThread({ messages }: { messages: MessageRow[] }) {
   }
 
   return (
-    <div className="flex flex-col gap-3 overflow-y-auto p-6">
+    <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-6">
       {messages.map((m) => {
         const isOut = m.direction === "out";
         return (
@@ -59,7 +60,7 @@ export function MessageThread({ messages }: { messages: MessageRow[] }) {
               )}
               {m.body && <p className="whitespace-pre-wrap">{m.body}</p>}
               <p className={`mt-1 text-[10px] ${isOut ? "text-brand-100" : "text-zinc-400"}`}>
-                {new Date(m.created_at).toLocaleString()}
+                {formatDateTime(m.created_at)}
                 {isOut && ` · ${m.status}`}
               </p>
             </div>

@@ -10,6 +10,7 @@ import {
 } from "../actions";
 import { RotateTokenForm } from "./rotate-token-form";
 import { CoexistenceConnectButton } from "./coexistence-connect-button";
+import { formatDateTime } from "@/lib/format-datetime";
 
 export default async function WhatsAppAccountDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -67,7 +68,7 @@ export default async function WhatsAppAccountDetailPage({ params }: { params: Pr
               <Row label="WABA ID" value={account.waba_id} />
               <Row
                 label="Connected"
-                value={account.connected_at ? new Date(account.connected_at).toLocaleString() : "Not connected"}
+                value={account.connected_at ? formatDateTime(account.connected_at) : "Not connected"}
               />
             </dl>
           </div>

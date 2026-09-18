@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { LiveDot } from "@/components/ui/live-dot";
 import { assignEmployeeToOwnAccountAction, unassignEmployeeFromOwnAccountAction } from "../actions";
+import { formatDateTime } from "@/lib/format-datetime";
 
 export default async function SupervisorWhatsAppAccountDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -55,7 +56,7 @@ export default async function SupervisorWhatsAppAccountDetailPage({ params }: { 
             <Row label="WABA ID" value={account.waba_id} />
             <Row
               label="Connected"
-              value={account.connected_at ? new Date(account.connected_at).toLocaleString() : "Not connected"}
+              value={account.connected_at ? formatDateTime(account.connected_at) : "Not connected"}
             />
           </dl>
           <p className="mt-4 text-xs text-zinc-400">

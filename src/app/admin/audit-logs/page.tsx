@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
+import { formatDateTime } from "@/lib/format-datetime";
 
 export default async function AuditLogsPage({
   searchParams,
@@ -47,7 +48,7 @@ export default async function AuditLogsPage({
                 return (
                   <tr key={log.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
                     <td className="px-4 py-3 text-zinc-500 dark:text-zinc-400">
-                      {new Date(log.created_at).toLocaleString()}
+                      {formatDateTime(log.created_at)}
                     </td>
                     <td className="px-4 py-3 text-zinc-900 dark:text-zinc-50">
                       {actor?.full_name ?? "System"}

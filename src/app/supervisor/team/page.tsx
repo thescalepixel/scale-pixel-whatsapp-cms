@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
+import { formatDateTime } from "@/lib/format-datetime";
 
 export default async function SupervisorTeamPage() {
   const supabase = await createClient();
@@ -39,7 +40,7 @@ export default async function SupervisorTeamPage() {
                     <Badge tone={e.status}>{e.status}</Badge>
                   </td>
                   <td className="px-4 py-3 text-zinc-500 dark:text-zinc-400">
-                    {e.last_login_at ? new Date(e.last_login_at).toLocaleString() : "Never"}
+                    {e.last_login_at ? formatDateTime(e.last_login_at) : "Never"}
                   </td>
                 </tr>
               ))}

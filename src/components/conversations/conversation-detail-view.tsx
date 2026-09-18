@@ -59,7 +59,7 @@ export function ConversationDetailView({
       )}
 
       <div className="grid grid-cols-1 gap-6 p-8 lg:grid-cols-[1fr_280px]">
-        <div className="flex flex-col rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+        <div className="flex h-[calc(100vh-220px)] min-h-[420px] flex-col overflow-hidden rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
           <MessageThread messages={messages} />
           {canReply ? (
             <ReplyBox conversationId={conversation.id} />

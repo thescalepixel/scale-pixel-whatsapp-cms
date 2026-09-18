@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { UserRowActions } from "./user-row-actions";
 import type { Enums } from "@/lib/supabase/database.types";
+import { formatDateTime } from "@/lib/format-datetime";
 
 const ROLE_FILTERS: { label: string; value: Enums<"user_role"> | "all" }[] = [
   { label: "All roles", value: "all" },
@@ -95,7 +96,7 @@ export default async function AdminUsersPage({
                       <Badge tone={u.status}>{u.status}</Badge>
                     </td>
                     <td className="px-4 py-3 text-zinc-500 dark:text-zinc-400">
-                      {u.last_login_at ? new Date(u.last_login_at).toLocaleString() : "Never"}
+                      {u.last_login_at ? formatDateTime(u.last_login_at) : "Never"}
                     </td>
                     <td className="px-4 py-3">
                       <UserRowActions userId={u.id} email={u.email} status={u.status} role={u.role} />

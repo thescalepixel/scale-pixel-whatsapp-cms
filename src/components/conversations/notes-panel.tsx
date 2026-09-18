@@ -3,6 +3,7 @@
 import { useRef, useTransition } from "react";
 import { addNoteAction } from "@/lib/conversations/actions";
 import type { NoteRow } from "@/lib/conversations/types";
+import { formatDateTime } from "@/lib/format-datetime";
 
 export function NotesPanel({
   conversationId,
@@ -30,7 +31,7 @@ export function NotesPanel({
             <li key={n.id} className="rounded-md bg-white/70 p-2 text-sm dark:bg-black/20">
               <p className="text-zinc-800 dark:text-zinc-200">{n.body}</p>
               <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-                {n.author?.full_name ?? "—"} ({n.author_role}) · {new Date(n.created_at).toLocaleString()}
+                {n.author?.full_name ?? "—"} ({n.author_role}) · {formatDateTime(n.created_at)}
               </p>
             </li>
           ))}
