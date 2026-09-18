@@ -71,6 +71,7 @@ function Chip({ href, active, children }: { href: string; active: boolean; child
   return (
     <Link
       href={href}
+      prefetch={false}
       className={`rounded-full px-3 py-1 text-xs font-medium capitalize ${
         active
           ? "bg-zinc-900 text-white dark:bg-zinc-50 dark:text-zinc-900"

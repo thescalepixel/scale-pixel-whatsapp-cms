@@ -73,6 +73,7 @@ export function NotificationsList({ notifications }: { notifications: Notificati
                   href={link}
                   onClick={() => !n.read_at && startTransition(() => markNotificationReadAction(n.id))}
                   className="block hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                  prefetch={false}
                 >
                   {content}
                 </Link>

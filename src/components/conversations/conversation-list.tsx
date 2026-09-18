@@ -81,7 +81,13 @@ export async function ConversationList({
               style={{ animationDelay: `${Math.min(i, 12) * 25}ms` }}
             >
               <td className="px-4 py-3">
-                <Link href={`${basePath}/${c.id}`} className="block">
+                {/* Every row here would otherwise prefetch its own detail
+                    page — messages, signed media URLs, notes, tags — the
+                    moment this list scrolls into view. Cheap with one
+                    conversation in test data, but scales terribly; measured
+                    the same pattern in the sidebar nav costing 900ms-1.8s
+                    per background fetch. */}
+                <Link href={`${basePath}/${c.id}`} className="block" prefetch={false}>
                   <span className="font-medium text-zinc-900 hover:underline dark:text-zinc-50">
                     {c.customer?.name || "Unknown"}
                   </span>

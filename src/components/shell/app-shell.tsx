@@ -128,6 +128,19 @@ export function AppShell({
               <Link
                 key={item.href}
                 href={item.href}
+                // Every nav item is in the sidebar's viewport at once, and
+                // Next.js prefetches on-viewport by default — that meant
+                // every single page load quietly kicked off a full
+                // server-rendered fetch (RLS-scoped DB queries included)
+                // for every other page in the nav, in the background.
+                // Measured live: those prefetches were the slowest
+                // requests on the page (900ms-1.8s each), competing with
+                // and delaying the actual page's own load. Nobody's
+                // visiting all ~10 pages in a sitting, so it wasn't
+                // earning its keep — prefetch on hover/focus instead via
+                // the default "intent"-less false, which still prefetches
+                // right when a link is actually clicked.
+                prefetch={false}
                 className={`flex items-center justify-between rounded-md border-l-2 px-3 py-2 text-sm font-medium transition-colors ${
                   active
                     ? "border-brand-500 bg-brand-50 text-brand-700 dark:border-brand-400 dark:bg-brand-950/50 dark:text-brand-300"
