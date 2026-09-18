@@ -5,9 +5,14 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireUser } from "@/lib/auth/session";
 import { writeAudit } from "@/lib/audit";
-import { sendWhatsAppTextMessage, uploadMediaToWhatsApp, sendWhatsAppMediaMessage } from "@/lib/whatsapp/cloud-api";
+import {
+  sendWhatsAppTextMessage,
+  uploadMediaToWhatsApp,
+  sendWhatsAppMediaMessage,
+  type WhatsAppMediaType,
+} from "@/lib/whatsapp/cloud-api";
 import { decryptToken } from "@/lib/whatsapp/crypto";
-import { extensionForMime, whatsappMediaTypeFromMime, uploadMediaToStorage } from "@/lib/whatsapp/media-storage";
+import { extensionForMime, whatsappMediaTypeFromMime, uploadMediaToStorage, MEDIA_BUCKET } from "@/lib/whatsapp/media-storage";
 import { remuxToOggOpus } from "@/lib/whatsapp/audio-remux";
 import type { Enums, TablesUpdate } from "@/lib/supabase/database.types";
 
@@ -238,6 +243,121 @@ export async function sendMediaMessageAction(conversationId: string, formData: F
   if (error) return { error: "Couldn't record the message. Try again." };
 
   await afterOutboundMessage(conversationId);
+  return { error: null };
+}
+
+/**
+ * Re-sends an existing message (text or media) into a different
+ * conversation this caller can also reach. The DB row is only ever readable
+ * through the caller's own RLS-scoped session — a message id they can't see
+ * simply won't be found — but the target conversation's account/customer
+ * lookup below is where a cross-tenant forward would actually be blocked
+ * (same "connected account or test mode" fallback every other send uses).
+ */
+export async function forwardMessageAction(
+  messageId: string,
+  targetConversationId: string,
+): Promise<{ error: string | null }> {
+  const user = await requireUser();
+  const supabase = await createClient();
+  const admin = createAdminClient();
+
+  const { data: source } = await supabase
+    .from("messages")
+    .select("body, media_type, media_path, media_mime_type, media_filename")
+    .eq("id", messageId)
+    .single();
+  if (!source) return { error: "Original message not found." };
+  if (!source.body && !source.media_type) return { error: "Nothing to forward." };
+
+  const { data: convForSend } = await supabase
+    .from("conversations")
+    .select(
+      "customer:customer_id ( whatsapp_number ), whatsapp_account:whatsapp_account_id ( phone_number_id, access_token_encrypted, status )",
+    )
+    .eq("id", targetConversationId)
+    .single();
+  if (!convForSend) return { error: "Target conversation not found." };
+
+  const account = Array.isArray(convForSend.whatsapp_account)
+    ? convForSend.whatsapp_account[0]
+    : convForSend.whatsapp_account;
+  const customer = Array.isArray(convForSend.customer) ? convForSend.customer[0] : convForSend.customer;
+
+  let status: Enums<"message_status"> = "sent";
+  let whatsappMessageId: string | null = null;
+  const isLive = account?.access_token_encrypted && account.status === "connected" && customer?.whatsapp_number;
+
+  if (isLive) {
+    const accessToken = decryptToken(account.access_token_encrypted);
+
+    if (source.media_type && source.media_path) {
+      // Meta's media ids are single-use/short-lived — re-upload our own
+      // permanent Storage copy fresh rather than trying to reuse anything
+      // from the original send.
+      const { data: fileBlob, error: dlErr } = await admin.storage.from(MEDIA_BUCKET).download(source.media_path);
+      if (dlErr || !fileBlob) {
+        status = "failed";
+      } else {
+        const mimeType = source.media_mime_type ?? "application/octet-stream";
+        const uploadToMeta = await uploadMediaToWhatsApp({
+          phoneNumberId: account.phone_number_id,
+          accessToken,
+          bytes: fileBlob,
+          mimeType,
+        });
+        if (uploadToMeta.ok) {
+          const sendRes = await sendWhatsAppMediaMessage({
+            phoneNumberId: account.phone_number_id,
+            accessToken,
+            to: customer.whatsapp_number,
+            mediaId: uploadToMeta.mediaId,
+            mediaType: source.media_type as WhatsAppMediaType,
+            caption: source.body ?? undefined,
+            filename: source.media_filename ?? undefined,
+          });
+          if (sendRes.ok) whatsappMessageId = sendRes.whatsappMessageId;
+          else status = "failed";
+        } else {
+          status = "failed";
+        }
+      }
+    } else if (source.body) {
+      const result = await sendWhatsAppTextMessage({
+        phoneNumberId: account.phone_number_id,
+        accessToken,
+        to: customer.whatsapp_number,
+        body: source.body,
+      });
+      if (result.ok) whatsappMessageId = result.whatsappMessageId;
+      else status = "failed";
+    }
+  }
+
+  const { error } = await supabase.from("messages").insert({
+    conversation_id: targetConversationId,
+    direction: "out",
+    sender_type: "employee",
+    sender_id: user.id,
+    body: source.body,
+    status,
+    whatsapp_message_id: whatsappMessageId,
+    media_type: source.media_type,
+    // Reusing the original path is safe: it's just a pointer into Storage,
+    // and access to it is still gated by RLS on the row that references it,
+    // not by which conversation's folder it physically lives under.
+    media_path: source.media_path,
+    media_mime_type: source.media_mime_type,
+    media_filename: source.media_filename,
+  });
+  if (error) return { error: "Couldn't forward the message." };
+
+  await writeAudit({
+    action: "conversation.forward_message",
+    resourceType: "conversation",
+    resourceId: targetConversationId,
+  });
+  await afterOutboundMessage(targetConversationId);
   return { error: null };
 }
 

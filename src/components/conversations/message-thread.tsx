@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import type { MessageRow } from "@/lib/conversations/types";
+import { useEffect, useRef, useState, useTransition } from "react";
+import type { ForwardTarget, MessageRow } from "@/lib/conversations/types";
 import { formatDateTime } from "@/lib/format-datetime";
+import { forwardMessageAction } from "@/lib/conversations/actions";
 
 function MediaContent({ m }: { m: MessageRow }) {
   if (!m.media_type) return null;
@@ -38,7 +39,88 @@ function MediaContent({ m }: { m: MessageRow }) {
   }
 }
 
-export function MessageThread({ messages }: { messages: MessageRow[] }) {
+function ForwardPanel({
+  messageId,
+  targets,
+  onClose,
+}: {
+  messageId: string;
+  targets: ForwardTarget[];
+  onClose: () => void;
+}) {
+  const [pending, startTransition] = useTransition();
+  const [targetId, setTargetId] = useState(targets[0]?.id ?? "");
+  const [error, setError] = useState<string | null>(null);
+  const [done, setDone] = useState(false);
+
+  function submit() {
+    if (!targetId) return;
+    setError(null);
+    startTransition(async () => {
+      const res = await forwardMessageAction(messageId, targetId);
+      if (res.error) {
+        setError(res.error);
+        return;
+      }
+      setDone(true);
+      setTimeout(onClose, 900);
+    });
+  }
+
+  return (
+    <div className="mt-1 w-64 rounded-md border border-zinc-200 bg-white p-2 text-xs shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
+      {done ? (
+        <p className="py-1 text-center font-medium text-brand-600 dark:text-brand-400">Forwarded</p>
+      ) : targets.length === 0 ? (
+        <p className="py-1 text-zinc-500 dark:text-zinc-400">No other conversations to forward to.</p>
+      ) : (
+        <>
+          <select
+            value={targetId}
+            onChange={(e) => setTargetId(e.target.value)}
+            disabled={pending}
+            className="w-full rounded border border-zinc-300 px-2 py-1 text-xs outline-none focus:border-brand-500 disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-950"
+          >
+            {targets.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.customerName || t.whatsappNumber || "Unknown"} {t.accountName ? `· ${t.accountName}` : ""}
+              </option>
+            ))}
+          </select>
+          {error && <p className="mt-1 text-red-600 dark:text-red-400">{error}</p>}
+          <div className="mt-2 flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={pending}
+              className="rounded px-2 py-1 text-zinc-500 hover:bg-zinc-100 disabled:opacity-50 dark:text-zinc-400 dark:hover:bg-zinc-800"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={submit}
+              disabled={pending}
+              className="rounded bg-brand-600 px-3 py-1 font-medium text-white hover:bg-brand-700 disabled:opacity-60"
+            >
+              {pending ? "Forwarding…" : "Forward"}
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+export function MessageThread({
+  messages,
+  forwardTargets = [],
+  canForward = false,
+}: {
+  messages: MessageRow[];
+  forwardTargets?: ForwardTarget[];
+  canForward?: boolean;
+}) {
   // Opening a conversation (or a new message arriving) should land on the
   // latest message, not wherever the scroll container defaults to (its
   // top — the oldest message). A single scroll-to-bottom on mount isn't
@@ -49,6 +131,8 @@ export function MessageThread({ messages }: { messages: MessageRow[] }) {
   // change, which covers that settling window without hijacking scroll
   // during normal reading later.
   const containerRef = useRef<HTMLDivElement>(null);
+  const [openForwardId, setOpenForwardId] = useState<string | null>(null);
+
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -76,8 +160,9 @@ export function MessageThread({ messages }: { messages: MessageRow[] }) {
     <div ref={containerRef} className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-6">
       {messages.map((m) => {
         const isOut = m.direction === "out";
+        const forwardOpen = openForwardId === m.id;
         return (
-          <div key={m.id} className={`animate-slide-up flex ${isOut ? "justify-end" : "justify-start"}`}>
+          <div key={m.id} className={`animate-slide-up flex flex-col ${isOut ? "items-end" : "items-start"}`}>
             <div
               className={`max-w-[75%] rounded-2xl px-4 py-2 text-sm ${
                 isOut
@@ -91,11 +176,28 @@ export function MessageThread({ messages }: { messages: MessageRow[] }) {
                 </div>
               )}
               {m.body && <p className="whitespace-pre-wrap">{m.body}</p>}
-              <p className={`mt-1 text-[10px] ${isOut ? "text-brand-100" : "text-zinc-400"}`}>
-                {formatDateTime(m.created_at)}
-                {isOut && ` · ${m.status}`}
-              </p>
+              <div className={`mt-1 flex items-center gap-1.5 text-[10px] ${isOut ? "text-brand-100" : "text-zinc-400"}`}>
+                <span>
+                  {formatDateTime(m.created_at)}
+                  {isOut && ` · ${m.status}`}
+                </span>
+                {canForward && (m.body || m.media_type) && (
+                  <button
+                    type="button"
+                    title="Forward this message"
+                    onClick={() => setOpenForwardId(forwardOpen ? null : m.id)}
+                    className={`rounded p-0.5 hover:bg-black/10 ${isOut ? "text-brand-100" : "text-zinc-400"}`}
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3 w-3">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 5l7 7-7 7M4 12h16" />
+                    </svg>
+                  </button>
+                )}
+              </div>
             </div>
+            {forwardOpen && (
+              <ForwardPanel messageId={m.id} targets={forwardTargets} onClose={() => setOpenForwardId(null)} />
+            )}
           </div>
         );
       })}

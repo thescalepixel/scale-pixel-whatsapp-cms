@@ -9,7 +9,10 @@ type Mode =
   | { kind: "recording" }
   | { kind: "recorded"; blob: Blob; previewUrl: string; seconds: number };
 
-const MAX_MB: Record<string, number> = { image: 5, video: 16 };
+// Mirrors WhatsApp's own Cloud API hard limits (Meta's, not ours) — nothing
+// larger than these can ever be delivered, for any app, so rejecting early
+// client-side just saves a round trip.
+const MAX_MB: Record<string, number> = { image: 5, video: 16, document: 100 };
 
 export function ReplyBox({ conversationId }: { conversationId: string }) {
   const [pending, startTransition] = useTransition();
@@ -45,14 +48,14 @@ export function ReplyBox({ conversationId }: { conversationId: string }) {
 
   function onFileChosen(file: File) {
     setError(null);
-    const kind = file.type.startsWith("image/") ? "image" : file.type.startsWith("video/") ? "video" : null;
-    const capMb = kind ? MAX_MB[kind] : 16;
+    const kind = file.type.startsWith("image/") ? "image" : file.type.startsWith("video/") ? "video" : "document";
+    const capMb = MAX_MB[kind];
     if (file.size > capMb * 1024 * 1024) {
       setError(`That file is too large (max ${capMb}MB).`);
       if (fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
-    const previewUrl = kind ? URL.createObjectURL(file) : null;
+    const previewUrl = kind === "image" || kind === "video" ? URL.createObjectURL(file) : null;
     setMode({ kind: "file", file, previewUrl });
   }
 
@@ -199,7 +202,7 @@ export function ReplyBox({ conversationId }: { conversationId: string }) {
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/*,video/*"
+        accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.zip,.rar"
         className="hidden"
         onChange={(e) => {
           const f = e.target.files?.[0];
@@ -208,7 +211,7 @@ export function ReplyBox({ conversationId }: { conversationId: string }) {
       />
       <button
         type="button"
-        title="Attach a photo or video"
+        title="Attach a photo, video, or document"
         onClick={() => fileInputRef.current?.click()}
         disabled={pending}
         className="shrink-0 rounded-md border border-zinc-300 p-2 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"

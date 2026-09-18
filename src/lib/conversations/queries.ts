@@ -2,7 +2,7 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getSignedMediaUrls } from "@/lib/whatsapp/media-storage";
-import type { ConversationListRow, MessageRow, NoteRow } from "./types";
+import type { ConversationListRow, ForwardTarget, MessageRow, NoteRow } from "./types";
 
 const LIST_SELECT = `
   id, status, priority, unread_count, awaiting_response, last_message_at, created_at,
@@ -97,32 +97,62 @@ export async function listConversations(filters: ConversationFilters = {}): Prom
   });
 }
 
+/** Other conversations this caller can forward a message into — RLS-scoped, same as any other read. */
+async function listForwardTargets(excludeConversationId: string): Promise<ForwardTarget[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("conversations")
+    .select("id, customer:customer_id ( name, whatsapp_number ), whatsapp_account:whatsapp_account_id ( display_name )")
+    .neq("id", excludeConversationId)
+    .order("last_message_at", { ascending: false })
+    .limit(200);
+
+  return (data ?? []).map((row) => {
+    const r = row as unknown as {
+      id: string;
+      customer: { name: string; whatsapp_number: string } | { name: string; whatsapp_number: string }[] | null;
+      whatsapp_account: { display_name: string } | { display_name: string }[] | null;
+    };
+    const one = <T,>(v: T | T[] | null): T | null => (Array.isArray(v) ? (v[0] ?? null) : v);
+    const customer = one(r.customer);
+    const account = one(r.whatsapp_account);
+    return {
+      id: r.id,
+      customerName: customer?.name ?? null,
+      whatsappNumber: customer?.whatsapp_number ?? null,
+      accountName: account?.display_name ?? null,
+    };
+  });
+}
+
 export async function getConversationDetail(id: string) {
   const supabase = await createClient();
   const { data: conversation } = await supabase.from("conversations").select(LIST_SELECT).eq("id", id).single();
   if (!conversation) return null;
 
-  const [{ data: messages }, { data: notes }, { data: allTags }, { data: waAccount }] = await Promise.all([
-    supabase
-      .from("messages")
-      .select("id, direction, sender_type, body, status, created_at, media_type, media_path, media_filename")
-      .eq("conversation_id", id)
-      .order("created_at", { ascending: true }),
-    supabase
-      .from("internal_notes")
-      .select("id, body, author_role, created_at, author:author_id ( full_name )")
-      .eq("conversation_id", id)
-      .order("created_at", { ascending: true }),
-    supabase.from("tags").select("id, name, color").order("name"),
-    // access_token_encrypted is ciphertext, not a secret in cleartext, but
-    // we still only use it to compute a boolean here — never forward the
-    // value itself to a client component.
-    supabase
-      .from("conversations")
-      .select("whatsapp_account:whatsapp_account_id ( status, access_token_encrypted )")
-      .eq("id", id)
-      .single(),
-  ]);
+  const [{ data: messages }, { data: notes }, { data: allTags }, { data: waAccount }, forwardTargets] =
+    await Promise.all([
+      supabase
+        .from("messages")
+        .select("id, direction, sender_type, body, status, created_at, media_type, media_path, media_filename")
+        .eq("conversation_id", id)
+        .order("created_at", { ascending: true }),
+      supabase
+        .from("internal_notes")
+        .select("id, body, author_role, created_at, author:author_id ( full_name )")
+        .eq("conversation_id", id)
+        .order("created_at", { ascending: true }),
+      supabase.from("tags").select("id, name, color").order("name"),
+      // access_token_encrypted is ciphertext, not a secret in cleartext, but
+      // we still only use it to compute a boolean here — never forward the
+      // value itself to a client component.
+      supabase
+        .from("conversations")
+        .select("whatsapp_account:whatsapp_account_id ( status, access_token_encrypted )")
+        .eq("id", id)
+        .single(),
+      listForwardTargets(id),
+    ]);
   const waRow = Array.isArray(waAccount?.whatsapp_account) ? waAccount.whatsapp_account[0] : waAccount?.whatsapp_account;
   const isLiveConnected = waRow?.status === "connected" && !!waRow?.access_token_encrypted;
 
@@ -178,5 +208,6 @@ export async function getConversationDetail(id: string) {
     }),
     allTags: allTags ?? [],
     isLiveConnected,
+    forwardTargets,
   };
 }

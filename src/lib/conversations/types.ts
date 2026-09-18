@@ -36,3 +36,10 @@ export type NoteRow = {
   created_at: string;
   author: { full_name: string } | null;
 };
+
+export type ForwardTarget = {
+  id: string;
+  customerName: string | null;
+  whatsappNumber: string | null;
+  accountName: string | null;
+};
