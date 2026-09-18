@@ -26,25 +26,15 @@ export function NewMessageSound({ userId }: { userId: string }) {
       .channel(`inbound-messages-sound-${userId}`)
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "messages" },
+        { event: "INSERT", schema: "public", table: "messages", filter: "direction=eq.in" },
         (payload) => {
-          // eslint-disable-next-line no-console -- temporary: diagnosing why the chime isn't firing in production
-          console.log("[new-message-sound] event received", payload);
-          const row = payload.new as { conversation_id?: string; direction?: string } | null;
-          if (row?.direction !== "in") return;
-          const conversationId = row?.conversation_id;
+          const conversationId = (payload.new as { conversation_id?: string } | null)?.conversation_id;
           // Already looking at this exact thread — no need to alert.
-          if (conversationId && pathnameRef.current?.includes(conversationId)) {
-            console.log("[new-message-sound] skipped — already viewing this conversation");
-            return;
-          }
+          if (conversationId && pathnameRef.current?.includes(conversationId)) return;
           playChime();
         },
       )
-      .subscribe((status, err) => {
-        // eslint-disable-next-line no-console -- temporary: diagnosing why the chime isn't firing in production
-        console.log("[new-message-sound] subscribe status:", status, err);
-      });
+      .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
