@@ -49,6 +49,7 @@ export function ReplyBox({ conversationId }: { conversationId: string }) {
     const capMb = kind ? MAX_MB[kind] : 16;
     if (file.size > capMb * 1024 * 1024) {
       setError(`That file is too large (max ${capMb}MB).`);
+      if (fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
     const previewUrl = kind ? URL.createObjectURL(file) : null;
@@ -232,13 +233,16 @@ export function ReplyBox({ conversationId }: { conversationId: string }) {
           <path strokeLinecap="round" strokeLinejoin="round" d="M19 11a7 7 0 0 1-14 0M12 18v3" />
         </svg>
       </button>
-      <textarea
-        name="body"
-        rows={2}
-        required
-        placeholder="Type a reply…"
-        className="flex-1 resize-none rounded-md border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-zinc-700 dark:bg-zinc-950"
-      />
+      <div className="flex flex-1 flex-col gap-1">
+        <textarea
+          name="body"
+          rows={2}
+          required
+          placeholder="Type a reply…"
+          className="w-full resize-none rounded-md border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-zinc-700 dark:bg-zinc-950"
+        />
+        {error && <p className="text-xs text-red-600 dark:text-red-400">{error}</p>}
+      </div>
       <button
         type="submit"
         disabled={pending}

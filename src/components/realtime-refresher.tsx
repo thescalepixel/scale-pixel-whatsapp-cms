@@ -30,6 +30,15 @@ export function RealtimeRefresher({
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
+    // Next.js reuses the previously-rendered page when the browser's
+    // back/forward buttons bring the user back to it (preserves scroll
+    // position / avoids layout shift) — that cached render can be stale if
+    // something changed while this page wasn't mounted to catch it via
+    // realtime. router.refresh() forces a fresh fetch regardless of that
+    // cache, so re-running it on popstate closes that gap.
+    const onPopState = () => router.refresh();
+    window.addEventListener("popstate", onPopState);
+
     let cancelled = false;
     let channel: ReturnType<typeof supabase.channel> | null = null;
     const supabase = createClient();
@@ -52,6 +61,7 @@ export function RealtimeRefresher({
     });
 
     return () => {
+      window.removeEventListener("popstate", onPopState);
       cancelled = true;
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
       if (channel) supabase.removeChannel(channel);
