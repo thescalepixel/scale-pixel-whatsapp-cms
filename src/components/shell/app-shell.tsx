@@ -65,7 +65,12 @@ export function AppShell({
           <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">Scale Pixel</span>
         </div>
         {notificationsHref ? (
-          <Link href={notificationsHref} aria-label="Notifications" className="relative -mr-2 rounded-md p-2 text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800">
+          <Link
+            href={notificationsHref}
+            aria-label="Notifications"
+            prefetch={false}
+            className="relative -mr-2 rounded-md p-2 text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+          >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-6 w-6">
               <path
                 strokeLinecap="round"
@@ -172,6 +177,7 @@ export function AppShell({
           </div>
           <Link
             href="/account/change-password"
+            prefetch={false}
             className="block w-full rounded-md px-3 py-2 text-left text-sm font-medium text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-50"
           >
             Change password
