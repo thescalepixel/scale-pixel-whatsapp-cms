@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { createClient, syncRealtimeAuth } from "@/lib/supabase/client";
 
 /**
  * Plays a short chime whenever a new inbound WhatsApp message arrives for a
@@ -21,23 +21,30 @@ export function NewMessageSound({ userId }: { userId: string }) {
   pathnameRef.current = pathname;
 
   useEffect(() => {
+    let cancelled = false;
+    let channel: ReturnType<typeof supabase.channel> | null = null;
     const supabase = createClient();
-    const channel = supabase
-      .channel(`inbound-messages-sound-${userId}`)
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "messages", filter: "direction=eq.in" },
-        (payload) => {
-          const conversationId = (payload.new as { conversation_id?: string } | null)?.conversation_id;
-          // Already looking at this exact thread — no need to alert.
-          if (conversationId && pathnameRef.current?.includes(conversationId)) return;
-          playChime();
-        },
-      )
-      .subscribe();
+
+    syncRealtimeAuth(supabase).then(() => {
+      if (cancelled) return;
+      channel = supabase
+        .channel(`inbound-messages-sound-${userId}`)
+        .on(
+          "postgres_changes",
+          { event: "INSERT", schema: "public", table: "messages", filter: "direction=eq.in" },
+          (payload) => {
+            const conversationId = (payload.new as { conversation_id?: string } | null)?.conversation_id;
+            // Already looking at this exact thread — no need to alert.
+            if (conversationId && pathnameRef.current?.includes(conversationId)) return;
+            playChime();
+          },
+        )
+        .subscribe();
+    });
 
     return () => {
-      supabase.removeChannel(channel);
+      cancelled = true;
+      if (channel) supabase.removeChannel(channel);
     };
   }, [userId]);
 

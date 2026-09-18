@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { createClient, syncRealtimeAuth } from "@/lib/supabase/client";
 
 /**
  * Subscribes to Postgres Changes on one table (optionally filtered) and
@@ -30,22 +30,31 @@ export function RealtimeRefresher({
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
+    let channel: ReturnType<typeof supabase.channel> | null = null;
     const supabase = createClient();
-    const channel = supabase
-      .channel(channelName)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table, ...(filter ? { filter } : {}) },
-        () => {
-          if (timeoutRef.current) clearTimeout(timeoutRef.current);
-          timeoutRef.current = setTimeout(() => router.refresh(), 300);
-        },
-      )
-      .subscribe();
+
+    // Must be awaited before .subscribe() — see syncRealtimeAuth's own
+    // comment for why setting auth only in the background isn't enough.
+    syncRealtimeAuth(supabase).then(() => {
+      if (cancelled) return;
+      channel = supabase
+        .channel(channelName)
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table, ...(filter ? { filter } : {}) },
+          () => {
+            if (timeoutRef.current) clearTimeout(timeoutRef.current);
+            timeoutRef.current = setTimeout(() => router.refresh(), 300);
+          },
+        )
+        .subscribe();
+    });
 
     return () => {
+      cancelled = true;
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      supabase.removeChannel(channel);
+      if (channel) supabase.removeChannel(channel);
     };
   }, [channelName, table, filter, router]);
 
