@@ -23,10 +23,14 @@ export function createClient() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
   );
 
-  client.auth.getSession().then(({ data: { session } }) => {
+  client.auth.getSession().then(({ data: { session }, error }) => {
+    // eslint-disable-next-line no-console -- temporary: diagnosing realtime auth wiring
+    console.log("[supabase-client] getSession result", { hasSession: !!session, hasToken: !!session?.access_token, error });
     if (session?.access_token) void client.realtime.setAuth(session.access_token);
   });
-  client.auth.onAuthStateChange((_event, session) => {
+  client.auth.onAuthStateChange((event, session) => {
+    // eslint-disable-next-line no-console -- temporary: diagnosing realtime auth wiring
+    console.log("[supabase-client] onAuthStateChange", event, { hasSession: !!session });
     void client.realtime.setAuth(session?.access_token ?? null);
   });
 
