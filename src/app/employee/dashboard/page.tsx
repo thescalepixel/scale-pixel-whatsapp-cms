@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/stat-card";
+import { RealtimeRefresher } from "@/components/realtime-refresher";
 
 // RLS (conversations_select_scoped) already limits every query below to
 // conversations assigned to this employee (plus their unassigned queue).
@@ -34,6 +35,7 @@ export default async function EmployeeDashboardPage() {
 
   return (
     <>
+      <RealtimeRefresher channelName="employee-dashboard-conversations" table="conversations" />
       <PageHeader title="Dashboard" description="Your workload today." />
       <div className="grid grid-cols-1 gap-4 p-4 sm:p-8 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="My active conversations" value={active ?? 0} href="/employee/conversations" delayMs={0} />

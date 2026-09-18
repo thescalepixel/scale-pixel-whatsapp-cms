@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/stat-card";
+import { RealtimeRefresher } from "@/components/realtime-refresher";
 
 async function count(
   supabase: Awaited<ReturnType<typeof createClient>>,
@@ -44,6 +45,13 @@ export default async function AdminDashboardPage() {
 
   return (
     <>
+      {/* This whole page is a snapshot fetched once at request time — these
+          re-run the Server Component tree whenever the underlying rows
+          change, so the counts don't go stale until someone manually
+          reloads. */}
+      <RealtimeRefresher channelName="admin-dashboard-conversations" table="conversations" />
+      <RealtimeRefresher channelName="admin-dashboard-users" table="users" />
+      <RealtimeRefresher channelName="admin-dashboard-whatsapp-accounts" table="whatsapp_accounts" />
       <PageHeader
         title="Dashboard"
         description="Platform-wide visibility across every supervisor's team."

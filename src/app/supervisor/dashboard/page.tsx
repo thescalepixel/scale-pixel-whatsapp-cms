@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/stat-card";
+import { RealtimeRefresher } from "@/components/realtime-refresher";
 
 // Every query here is scoped automatically by RLS (direct account
 // ownership / whatsapp_account_employees membership) — no manual
@@ -19,6 +20,8 @@ export default async function SupervisorDashboardPage() {
 
   return (
     <>
+      <RealtimeRefresher channelName="supervisor-dashboard-conversations" table="conversations" />
+      <RealtimeRefresher channelName="supervisor-dashboard-users" table="users" />
       <PageHeader title="Dashboard" description="Your team and WhatsApp accounts." />
       <div className="grid grid-cols-1 gap-4 p-4 sm:p-8 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Team members" value={teamSize ?? 0} href="/supervisor/team" delayMs={0} />
