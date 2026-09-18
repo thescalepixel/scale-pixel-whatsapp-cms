@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { logout } from "@/lib/auth/actions";
 import type { CurrentUser } from "@/lib/auth/session";
 import { RealtimeRefresher } from "@/components/realtime-refresher";
+import { NewMessageSound } from "@/components/new-message-sound";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 export type NavItem = { label: string; href: string };
@@ -43,6 +44,7 @@ export function AppShell({
         table="notifications"
         filter={`user_id=eq.${user.id}`}
       />
+      <NewMessageSound userId={user.id} />
 
       {/* Mobile-only top bar — the sidebar itself is off-canvas below md. */}
       <div className="fixed inset-x-0 top-0 z-30 flex h-14 items-center justify-between border-b border-zinc-200 bg-white px-4 dark:border-zinc-800 dark:bg-zinc-900 md:hidden">
